@@ -77,7 +77,7 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	style := qryParam("style", r, style)
 	text := qryParam("text", r, text)
 	logo := qryParam("logo", r, logo)
-	logoColour := qryParam("logo", r, logoColour)
+	logoColour := qryParam("logoColor", r, logoColour)
 	cnt := updateCounter(hash)
 
 	badge := generateBadge(text, cnt, colour, style, logo, logoColour)
