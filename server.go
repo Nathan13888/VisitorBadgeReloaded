@@ -8,20 +8,26 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
 )
 
 // defaults
-var colour = "#0c7cb9"[1:]
-var style = "flat-square"
-var text = "Visitors"
-var logo = "GitHub" // https://simpleicons.org/
+const (
+	colour     = "blue"
+	style      = "flat"
+	text       = "Visitors"
+	logo       = "" // https://simpleicons.org/
+	logoColour = "white"
+)
 
 var varCountAPInamespace = "visitor-badge"
 var port = os.Getenv("PORT")
 var key = os.Getenv("KEY")
+
+// TODO: log levels
 
 // Visitor Badge URL Format: /badge?page_id=<key>
 func main() {
@@ -56,24 +62,25 @@ func getHash(pageID string) string {
 }
 
 func getBadge(w http.ResponseWriter, r *http.Request) {
-	qry, ok := r.URL.Query()["page_id"]
+	page := qryParam("page_id", r, "")
 
-	if !ok || len(qry) == 0 {
-		// TODO: handle input errors
+	if page == "" {
 		return
 	}
-	// TODO: implement sanity checks: page, text, cnt, colour, logo
-	page := qry[0]
 
 	// TODO: time query speed
 	log.Printf("Looking up `%s`", page)
 
 	hash := getHash(page)
-	cnt := updateCounter(hash)
-	// fmt.Println(hash)
-	// fmt.Fprintf(w, cnt)
 
-	badge := generateBadge(text, cnt, colour)
+	colour := qryParam("color", r, colour)
+	style := qryParam("style", r, style)
+	text := qryParam("text", r, text)
+	logo := qryParam("logo", r, logo)
+	logoColour := qryParam("logo", r, logoColour)
+	cnt := updateCounter(hash)
+
+	badge := generateBadge(text, cnt, colour, style, logo, logoColour)
 
 	date := time.Now().Add(time.Minute * -10).Format(http.TimeFormat)
 	w.Header().Set("Content-Type", "image/svg+xml")
@@ -86,11 +93,13 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Generated badge for `%s` with %s views", page, cnt)
 }
 
-// TODO: support logos and different styles
-func generateBadge(text string, cnt string, colour string) []byte {
+// TODO: add struct to handle badge input
+func generateBadge(text string, cnt string, colour string,
+	style string, logo string, logoColour string) []byte {
 	// TODO: validate SVG format
 	// https://img.shields.io/badge/text-cnt-colour[?flags=here...]
-	url := fmt.Sprintf("https://img.shields.io/badge/%s-%s-%s", text, cnt, colour)
+	url := fmt.Sprintf("https://img.shields.io/badge/%s-%s-%s?style=%s&logo=%s&logoColor=%s",
+		text, cnt, colour, style, logo, logoColour)
 	fmt.Println(url)
 	res, err := http.Get(url)
 	if err != nil {
@@ -108,6 +117,15 @@ func generateBadge(text string, cnt string, colour string) []byte {
 func getErrorBadge() {
 	log.Println("Generated ERROR badge")
 	// TODO: return error badge
+}
+
+func qryParam(param string, r *http.Request, defValue string) string {
+	qry, found := r.URL.Query()[param]
+	// TODO: better sanitation
+	if !found || len(qry) == 0 {
+		return defValue
+	}
+	return url.QueryEscape(qry[0])
 }
 
 func getWebsite(res http.ResponseWriter, req *http.Request) {
