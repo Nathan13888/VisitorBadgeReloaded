@@ -42,7 +42,7 @@ func main() {
 	http.HandleFunc("/index.html", getWebsite)
 	http.HandleFunc("/badge", getBadge)
 
-	log.Fatal(http.ListenAndServe(port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 	// log.Fatal(http.ListenAndServeTLS(":8081", "localhost.crt", "localhost.key", nil))
 }
 
