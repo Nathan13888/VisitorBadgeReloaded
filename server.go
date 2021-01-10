@@ -13,9 +13,6 @@ import (
 	"time"
 )
 
-// port
-var port = 8080
-
 // defaults
 var colour = "#0c7cb9"[1:]
 var style = "flat-square"
@@ -23,12 +20,16 @@ var text = "Visitors"
 var logo = "GitHub" // https://simpleicons.org/
 
 var varCountAPInamespace = "visitor-badge"
+var port = os.Getenv("PORT")
 var key = os.Getenv("KEY")
 
 // Visitor Badge URL Format: /badge?page_id=<key>
 func main() {
 	fmt.Printf("Starting Visitor Badge Reloaded Server...\n\n")
 
+	if port == "" {
+		port = "8080"
+	}
 	if key == "" {
 		key = "guess_what"
 	}
@@ -41,8 +42,8 @@ func main() {
 	http.HandleFunc("/index.html", getWebsite)
 	http.HandleFunc("/badge", getBadge)
 
-	// TODO: HTTPS support
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(port, nil))
+	// log.Fatal(http.ListenAndServeTLS(":8081", "localhost.crt", "localhost.key", nil))
 }
 
 func getHash(pageID string) string {
