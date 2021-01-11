@@ -1,6 +1,6 @@
 # Visitor Badge Reloaded
 
-![](https://visitor-badge-reloaded.herokuapp.com/badge?page_id=visitor-badge-reloaded-visitors&color=232323&style=flat-square&logo=Github)
+![](https://visitor-badge-reloaded.herokuapp.com/badge?page_id=visitor-badge-reloaded-visitors&color=232323&style=for-the-badge&logo=Github)
 
 **Visitor Badge Reloaded** is a recreation of the the popular [visitor-badge](https://github.com/jwenjian/visitor-badge) which is __no longer maintained__, unfortunately. In addition, it was missing some features which made it feel incomplete to me. It was also written using Python which I'm personally not a huge fan of; especially the performance.
 
