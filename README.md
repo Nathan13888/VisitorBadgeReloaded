@@ -27,7 +27,13 @@
 ``
 ``
 ### Options
-- `` -->
+**IMPORTANT: Other than the `page_id` option, there exists additional styling options and functional options (in the future). More details about the options could be found at the bottom of the [Shields.io website](https://shields.io/). Also, all the options are specified as HTTP parameters!!!**
+- `page_id=<your id>` --> identifies your badge, make this unique to yourself. eg. `<your username.visitor.badge.reloaded` or `<username>-<username>`
+- `&color=<colour here>` --> the hex colour code of your badge, **do NOT include the `#`**
+- `&style=<style name>` --> refer to the Sheilds.IO website for the available options
+- `&text=<Some text other than "Visitors">` --> put a customizable label on your badge
+- `&logo` --> logo to put beside the badge, go to https://simpleicons.org/ for the available names
+- `&logoColor` --> refer to `color` for the formatting
 
 ## Deploying your own instance
 If at any point, you feel the need to host your own instace, you could refer to the following information to do so. I personally don't believe in such a need as of this point but you are welcome to do so.
