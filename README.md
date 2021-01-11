@@ -29,6 +29,15 @@
 ### Options
 - `` -->
 
+## Deploying your own instance
+If at any point, you feel the need to host your own instace, you could refer to the following information to do so. I personally don't believe in such a need as of this point but you are welcome to do so.
+### Docker/Kubernetes
+This app could be packaged as a Docker image. __Just run the relevant commands found in the `Makefile`__. Then deploy to your choosen cloud service or even to your own server. However, note that there is no HTTPS support out of the box as the SSL cert actually just comes from Heroku's site-wide cert.
+### Heroku (recommended)
+Heroku supports Docker containers even with their free instances. __The current public instance of the app is deployed there as well.__ Documentation is found [here](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml). All the files necessary to deploy to Heroku is already present with the repository __so this should be rather trivial__. In addition `make deploy-heroku` just pushes the git repo to the `heroku` remote if you have configured Heroku already.
+### OTHER
+**IF you have tried any other method of deploying this app elsewhere such as on Glitch or some other Cloud Platform, please send __pull requests__ on your experience so others could benefit from it, that would be greatly appreciated.**
+
 ## "Stuff" Used
 - Golang
 - shields.io badges
