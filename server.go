@@ -24,21 +24,14 @@ const (
 )
 
 var varCountAPInamespace = "visitor-badge"
-var port = os.Getenv("PORT")
-var key = os.Getenv("KEY")
+var port = getEnv("PATH", "8080")
+var key = getEnv("KEY", "guess_what")
 
 // TODO: log levels
 
 // Visitor Badge URL Format: /badge?page_id=<key>
 func main() {
 	fmt.Printf("Starting Visitor Badge Reloaded Server...\n\n")
-
-	if port == "" {
-		port = "8080"
-	}
-	if key == "" {
-		key = "guess_what"
-	}
 
 	// TODO: DEFAULT_*{COLOUR,STYLE,TEXT,LOGO}
 
@@ -155,4 +148,12 @@ func updateCounter(hash string) string {
 	decoder.Decode(&obj)
 
 	return strconv.Itoa(obj.Value)
+}
+
+func getEnv(key string, defValue string) string {
+	env := os.Getenv(key)
+	if env == "" {
+		return defValue
+	}
+	return env
 }
