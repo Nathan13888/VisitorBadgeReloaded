@@ -34,11 +34,15 @@
 - shields.io badges
 - Docker
 
-## TODO (organized in the order highiest priority)
+## TODO (organized in order of highest priority)
+- website homepage
+- more configurable settings and better logging capabilities
 - self-hosted database for caching (Redis probably)
+- more crytopgraphically secure hashing (configurable)
 - analytics??
 - differentiates user by IP
 - differentiates user by Github account???
+- __*additional TODOs are in the code itself*__
 
 ## Contribution
 If you are interested in helping make this project better, I highly welcome you to do so. I thank you in advance for your interest. If you are unsure of what you could do to improve the project, you may have a look in TODO list (above), or add to the list yourself
