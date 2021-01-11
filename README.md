@@ -19,6 +19,7 @@
 - Logo: *no logo*
 
 ## Migrating From Visitor Badge
+*Since **Visitor Badge Reloaded** was made to have all the same features as the original Visitor Badge with extra, even the format of the badges are exact same. This means that all you have to do is replace the __url__ of the badge with `https://visitor-badge-reloaded.herokuapp.com/badge?page_id=<your own page_id here>`. The total visits will remain the **exact same** as well.*
 
 ## Settings/Configuration
 ### Examples
