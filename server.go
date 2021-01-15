@@ -24,7 +24,7 @@ const (
 )
 
 var varCountAPInamespace = "visitor-badge"
-var port = getEnv("PATH", "8080")
+var port = getEnv("PORT", "8080")
 var key = getEnv("KEY", "guess_what")
 
 // TODO: log levels
@@ -39,6 +39,7 @@ func main() {
 
 	http.HandleFunc("/", getWebsite)
 	http.HandleFunc("/index.html", getWebsite)
+	http.HandleFunc("/ping", getPing)
 	http.HandleFunc("/badge", getBadge)
 
 	log.Fatal(http.ListenAndServe(":"+port, nil))
@@ -123,6 +124,10 @@ func qryParam(param string, r *http.Request, defValue string) string {
 
 func getWebsite(res http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(res, "A website is currently unavailable :(")
+}
+
+func getPing(res http.ResponseWriter, req *http.Request) {
+	fmt.Fprintf(res, "PONG!!!")
 }
 
 type CountAPIResponse struct {
