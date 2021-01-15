@@ -2,6 +2,10 @@
 
 ![](https://visitor-badge-reloaded.herokuapp.com/badge?page_id=visitor-badge-reloaded-visitors&color=232323&style=for-the-badge&logo=Github)
 
+[![](https://goreportcard.com/badge/github.com/Nathan13888/VisitorBadgeReloaded)](https://goreportcard.com/report/github.com/Nathan13888/VisitorBadgeReloaded)
+[![](https://img.shields.io/badge/License-MIT%202.0-blue.svg)](https://github.com/gojp/goreportcard/blob/master/LICENSE)
+[![Coverage Status](https://coveralls.io/repos/github/Nathan13888/VisitorBadgeReloaded/badge.svg?branch=master)](https://coveralls.io/github/Nathan13888/VisitorBadgeReloaded?branch=master)
+
 **Visitor Badge Reloaded** is a recreation of the the popular [visitor-badge](https://github.com/jwenjian/visitor-badge) which is __no longer maintained__, unfortunately. In addition, it was missing some features which made it feel incomplete to me. It was also written using Python which I'm personally not a huge fan of; especially the performance.
 
 *There is a similar project made by ESKYoung who forked the project and implemented other features before to customize the badge found [here](https://github.com/ESKYoung/shields-io-visitor-counter)*
