@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/rs/zerolog/log"
 )
 
 // TODO: add struct to handle badge input
@@ -16,22 +17,20 @@ func generateBadge(text string, cnt string, colour string,
 	// https://img.shields.io/badge/text-cnt-colour[?flags=here...]
 	url := fmt.Sprintf("https://img.shields.io/badge/%s-%s-%s?style=%s&logo=%s&logoColor=%s",
 		text, cnt, colour, style, logo, logoColour)
-	fmt.Println(url)
 	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		logError(err)
 	}
 	defer res.Body.Close()
 	body, e := ioutil.ReadAll(res.Body)
 	if e != nil {
-		log.Fatal(err)
+		logError(err)
 	}
-	// fmt.Println(string(body))
 	return body
 }
 
 func getErrorBadge() {
-	log.Println("Generated ERROR badge")
+	log.Error().Msg("Generated ERROR badge")
 	// TODO: return error badge
 }
 
@@ -52,7 +51,7 @@ func updateCountAPI(hash string) string {
 	// 	log.Fatal("Did not receive expected JSON response. Received: " + cont)
 	// }
 	if err != nil {
-		log.Fatal(err)
+		logError(err)
 	}
 	defer res.Body.Close()
 

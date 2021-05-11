@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 )
 
 // defaults
@@ -28,6 +28,14 @@ var key = getEnv("KEY", "guess_what")
 
 // Visitor Badge URL Format: /badge?page_id=<key>
 func main() {
+	debug := false
+	if len(getEnv("DEBUG", "")) > 0 {
+		debug = true
+	}
+
+	// configure logging
+	configureLogger(debug)
+
 	r := mux.NewRouter()
 	server := &http.Server{
 		Handler:      r,
@@ -37,23 +45,24 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	fmt.Printf("Starting Visitor Badge Reloaded Server...\n\n")
+	log.Info().Msg("Starting Visitor Badge Reloaded server")
 
 	// TODO: DEFAULT_*{COLOUR,STYLE,TEXT,LOGO}
 
-	fmt.Printf("Key is set to `%s`\n", key)
+	log.Info().Msgf("Key is set to `%s`", key)
 
 	r.HandleFunc("/", getWebsite).Methods("GET")
 	r.HandleFunc("/index.html", getWebsite).Methods("GET")
 	r.HandleFunc("/ping", getPing).Methods("GET")
 	r.HandleFunc("/badge", getBadge).Methods("GET")
 
+	log.Info().Msg("Configuring cache")
 	initCache()
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
-			log.Println(err)
+			logError(err)
 		}
 	}()
 
@@ -76,7 +85,7 @@ func main() {
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
-	log.Println("shutting down...")
+	log.Info().Msg("shutting down...")
 	os.Exit(0)
 }
 
@@ -88,7 +97,7 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: time query speed
-	log.Printf("Looking up `%s`", page)
+	log.Info().Str("page", page).Msg("Look up")
 
 	hash := getHash(page)
 
@@ -114,13 +123,13 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(badge)
 
-	log.Printf("Generated badge for `%s` with %s views", page, cnt)
+	log.Info().Str("page", page).Str("views", cnt).Msg("Generated badge")
 }
 
-func getWebsite(res http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(res, "A website is currently unavailable :(")
+func getWebsite(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "A website is currently unavailable :(")
 }
 
-func getPing(res http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(res, "PONG!!!")
+func getPing(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "PONG!!!")
 }

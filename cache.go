@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
 	"time"
 
 	"github.com/allegro/bigcache"
+	"github.com/rs/zerolog/log"
 )
 
 var cacheConfig = bigcache.Config{
@@ -37,7 +37,7 @@ var cache *bigcache.BigCache
 func initCache() {
 	c, err := bigcache.NewBigCache(cacheConfig)
 	if err != nil {
-		log.Fatal(err)
+		logError(err)
 	}
 	cache = c
 }
@@ -49,7 +49,7 @@ func updateCachedCount(hash string) string {
 		capi := updateCountAPI(hash)
 		if err == bigcache.ErrEntryNotFound {
 			// update cached value
-			log.Println("Cached HASH " + hash)
+			log.Info().Str("page", hash).Msg("Cached")
 			cache.Set(hash, []byte(capi))
 		} else {
 			logError(err)
