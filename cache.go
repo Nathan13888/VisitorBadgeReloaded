@@ -61,6 +61,12 @@ func updateCachedCount(hash string) string {
 	}
 	newCount := tallyByteSlice(entry)
 	cache.Set(hash, newCount)
+
+	// update CountAPI count in a separate go routine
+	go func() {
+		updateCountAPI(hash)
+	}()
+
 	return string(newCount)
 }
 
