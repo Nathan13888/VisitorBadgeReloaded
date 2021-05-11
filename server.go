@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -24,7 +25,8 @@ const (
 var port = getEnv("PORT", "8080")
 var key = getEnv("KEY", "guess_what")
 
-// TODO: log levels
+var startTime time.Time
+var processedBadges int64 = 0
 
 // Visitor Badge URL Format: /badge?page_id=<key>
 func main() {
@@ -54,10 +56,12 @@ func main() {
 	r.HandleFunc("/", getWebsite).Methods("GET")
 	r.HandleFunc("/index.html", getWebsite).Methods("GET")
 	r.HandleFunc("/ping", getPing).Methods("GET")
+	r.HandleFunc("/status", getStatus).Methods("GET")
 	r.HandleFunc("/badge", getBadge).Methods("GET")
 
 	log.Info().Msg("Configuring cache")
 	initCache()
+	startTime = time.Now()
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
@@ -90,6 +94,7 @@ func main() {
 }
 
 func getBadge(w http.ResponseWriter, r *http.Request) {
+	processedBadges++
 	page := qryParam("page_id", r, "")
 
 	if page == "" {
@@ -132,4 +137,14 @@ func getWebsite(w http.ResponseWriter, r *http.Request) {
 
 func getPing(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "PONG!!!")
+}
+
+func getStatus(w http.ResponseWriter, r *http.Request) {
+	res := StatusResponse{
+		CachedHashes:      cache.Len(),
+		ProcessedRequests: processedBadges,
+		Uptime:            int64(time.Since(startTime).Seconds()),
+		CodeRepository:    "https://github.com/Nathan13888/dcs",
+	}
+	json.NewEncoder(w).Encode(res)
 }
