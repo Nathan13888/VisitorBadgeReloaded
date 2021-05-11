@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := run
 
 run:
-	go run server.go
+	go run .
 
 build:
 	go build -o server . 
