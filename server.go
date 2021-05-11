@@ -48,6 +48,8 @@ func main() {
 	r.HandleFunc("/ping", getPing).Methods("GET")
 	r.HandleFunc("/badge", getBadge).Methods("GET")
 
+	initCache()
+
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
@@ -95,7 +97,12 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	text := qryParam("text", r, text)
 	logo := qryParam("logo", r, logo)
 	logoColour := qryParam("logoColor", r, logoColour)
-	cnt := updateCounter(hash)
+	useCache := false
+	if len(qryParam("cache", r, "")) > 0 {
+		useCache = true
+	}
+
+	cnt := updateCounter(useCache, hash)
 
 	badge := generateBadge(text, cnt, colour, style, logo, logoColour)
 

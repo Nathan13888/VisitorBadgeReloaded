@@ -35,7 +35,15 @@ func getErrorBadge() {
 	// TODO: return error badge
 }
 
-func updateCounter(hash string) string {
+func updateCounter(useCache bool, hash string) string {
+	if !useCache {
+		return updateCountAPI(hash)
+	}
+	// look up cache
+	return updateCachedCount(hash) // note that this will return the CountAPI count if hash does not exist
+}
+
+func updateCountAPI(hash string) string {
 	url := "https://api.countapi.xyz/hit/visitor-badge/" + hash
 	res, err := http.Get(url)
 	// TODO: fix header content check
