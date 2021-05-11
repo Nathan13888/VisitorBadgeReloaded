@@ -144,7 +144,7 @@ func getStatus(w http.ResponseWriter, r *http.Request) {
 		CachedHashes:      cache.Len(),
 		ProcessedRequests: processedBadges,
 		Uptime:            int64(time.Since(startTime).Seconds()),
-		CodeRepository:    "https://github.com/Nathan13888/dcs",
+		CodeRepository:    "https://github.com/Nathan13888/VisitorBadgeReloaded",
 	}
 	json.NewEncoder(w).Encode(res)
 }
