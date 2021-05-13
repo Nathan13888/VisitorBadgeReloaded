@@ -94,7 +94,6 @@ func main() {
 }
 
 func getBadge(w http.ResponseWriter, r *http.Request) {
-	processedBadges++
 	page := qryParam("page_id", r, "")
 
 	if page == "" {

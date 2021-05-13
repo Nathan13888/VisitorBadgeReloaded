@@ -41,6 +41,7 @@ func logErrorMsg(err error, msg string) {
 }
 
 func loggingMiddleware(next http.Handler) http.Handler {
+	processedBadges++
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Info().
 			Str("method", r.Method).
