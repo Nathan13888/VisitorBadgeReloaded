@@ -3,8 +3,11 @@
 run:
 	go run .
 
+bench:
+	go run ./benchmark/bench.go
+
 build:
-	go build -o server . 
+	go build -ldflags "-s -w" -o server .
 
 docker-build:
 	docker build -t vbr .
