@@ -7,7 +7,7 @@ bench:
 	go run ./benchmark/bench.go
 
 build:
-	go build -ldflags "-s -w" -o server .
+	go build -ldflags "-s -w" -o bin/vbr .
 
 docker-build:
 	docker build -t vbr .

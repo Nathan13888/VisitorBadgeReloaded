@@ -1,18 +1,21 @@
-# The base go-image
-FROM golang:alpine
- 
-# Create a directory for the app
-RUN mkdir /app
- 
-# Copy all files from the current directory to the app directory
-COPY . /app
- 
-# Set working directory
+# IMAGE: BUILDER
+FROM golang:1.16-alpine as builder
+WORKDIR /build
+COPY . .
+RUN apk add make
+RUN make build
+
+# IMAGE: CONTAINER
+FROM alpine:latest
 WORKDIR /app
- 
-# Run command as described:
-# go build will build an executable file named server in the current directory
-RUN go build -o server . 
- 
-# Run the server executable
-CMD [ "/app/server" ]
+
+# ENV VARIABLES
+
+## TIMEZONE
+RUN apk add tzdata
+RUN cp /usr/share/zoneinfo/America/Toronto /etc/localtime
+
+COPY --from=builder /build/bin/vbr /app/vbr
+
+CMD [ "/app/vbr" ]
+
