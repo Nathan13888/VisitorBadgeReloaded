@@ -59,6 +59,8 @@ func main() {
 	r.HandleFunc("/status", getStatus).Methods("GET")
 	r.HandleFunc("/badge", getBadge).Methods("GET")
 
+	r.Use(loggingMiddleware)
+
 	log.Info().Msg("Configuring cache")
 	initCache()
 	startTime = time.Now()
