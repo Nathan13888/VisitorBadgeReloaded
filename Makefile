@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := run
 
 run:
-	go run .
+	PORT=8080 DEBUG=ENABLED LOCAL_SHIELDS=ENABLED go run .
 
 bench:
 	go run ./benchmark/bench.go
@@ -13,7 +13,7 @@ docker-build:
 	docker build -t vbr .
 
 docker-run:
-	docker run -it --rm -p 80:8080 -p 443:8081 vbr
+	docker run -it --rm -p 80:8080 -p 443:8081 -p 9090:9090 vbr
 
 publish:
 	make publish-ghcr
