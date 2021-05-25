@@ -19,6 +19,16 @@ Hence, something of **better performance** and **functionality** *must* be made!
 ---
 
 ## VBR vs [Visitor-Badge](https://github.com/jwenjian/visitor-badge)
+|   | VBR | Visitor-Badge |
+--- | --- | ---
+| **Programming Language** | Golang | Python |
+| **Performance** | Arguably better? Mux router is quick at matching and generation functions are optimized. Caching is available as well. | Flask... 🤔 |
+| **Features** | There are many additional features for customizability... | Select your page_id? |
+| **Potential downtime?** | Nope, as long as Heroku is up. | Glitch instance may reach a request limit 😢 |
+| **Self hosting friendly?** | There are instructions and I am always open to help! | Questionable documentation? |
+| **Maintained and under development?** | Yes... | No, according to owner himself |
+| **Source code is readible?** | Maybe not? | One file but not much better for readibility |
+
 - **direct replacement** (refer to [Migrating From Visitor Badge](#migrating-from-visitor-badge)
 - (almost) fully customizable badge
 
@@ -47,7 +57,7 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
 ### Examples
 
 
-### Options (add as
+### Options (add as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string))
 **IMPORTANT: Other than the `page_id` option, there exists additional styling options and functional options (in the future). More details about the options could be found at the bottom of the [Shields.io website](https://shields.io/). Also, all the options are specified as HTTP parameters!!!**
 - `page_id=<your id>` --> identifies your badge, make this unique to yourself. eg. `<your username.visitor.badge.reloaded` or `<username>-<username>`
 - `color=<colour here>` --> the hex colour code of your badge, **do NOT include the `#`**
