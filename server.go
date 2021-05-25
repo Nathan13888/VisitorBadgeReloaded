@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -15,12 +16,16 @@ import (
 
 // defaults
 const (
-	colour     = "blue"
-	style      = "flat"
-	text       = "Visitors"
-	logo       = "" // https://simpleicons.org/
-	logoColour = "white"
+	colour          = "blue"
+	style           = "flat"
+	text            = "Visitors"
+	logo            = "" // https://simpleicons.org/
+	logoColour      = "white"
+	DEFAULT_SHIELDS = "https://img.shields.io"
 )
+
+var SHIELDS_URL = DEFAULT_SHIELDS
+var badgeErrorCount = 0
 
 var port = getEnv("PORT", "8080")
 var key = getEnv("KEY", "guess_what")
@@ -31,8 +36,12 @@ var processedBadges int64 = 0
 // Visitor Badge URL Format: /badge?page_id=<key>
 func main() {
 	debug := false
-	if len(getEnv("DEBUG", "")) > 0 {
+	if strings.EqualFold(getEnv("DEBUG", ""), "enabled") {
 		debug = true
+	}
+
+	if strings.EqualFold(getEnv("LOCAL_SHIELDS", ""), "enabled") {
+		SHIELDS_URL = "http://localhost:9090"
 	}
 
 	// configure logging
@@ -119,7 +128,7 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 
 	cnt := updateCounter(useCache, hash)
 
-	badge := generateBadge(text, cnt, colour, style, logo, logoColour)
+	badge := generateBadge(SHIELDS_URL, text, cnt, colour, style, logo, logoColour)
 
 	date := time.Now().Add(time.Minute * -10).Format(http.TimeFormat)
 	w.Header().Set("Content-Type", "image/svg+xml")
