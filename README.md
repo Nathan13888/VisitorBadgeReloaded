@@ -29,11 +29,22 @@ Hence, something of **better performance** and **functionality** *must* be made!
 | **Maintained and under development?** | Yes... | No, according to owner himself |
 | **Source code is readible?** | Maybe not? | One file but not much better for readibility |
 
-- **direct replacement** (refer to [Migrating From Visitor Badge](#migrating-from-visitor-badge)
+- **direct replacement** (refer to [Migrating From Visitor Badge](#migrating-from-visitor-badge))
 - (almost) fully customizable badge
 
 ## Benchmarks
 *coming soon...*
+
+## Settings/Configuration
+### Defaults
+- Colour: "blue"
+- Style: "square"
+- Text: "Visitors"
+- Logo: *no logo*
+- Cache: *disabled*
+
+### Examples
+- 
 
 ## Migrating From Visitor Badge
 ```
@@ -45,17 +56,6 @@ ie. 'visitor-badge.glitch.me/badge?page_id=YOURPAGEID' --> 'visitor-badge-reload
 This means that all you have to do is replace the __url__ of the badge with `https://visitor-badge-reloaded.herokuapp.com/badge?page_id=<your own page_id here>`. The total visits will remain the **exact same** as well!
 
 Also, **VBR features could be configured as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string)**!
-
-## Settings/Configuration
-### Defaults
-- Colour: "blue"
-- Style: "square"
-- Text: "Visitors"
-- Logo: *no logo*
-- Cache: *disabled*
-
-### Examples
-
 
 ### Options (add as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string))
 **IMPORTANT: Other than the `page_id` option, there exists additional styling options and functional options (in the future). More details about the options could be found at the bottom of the [Shields.io website](https://shields.io/). Also, all the options are specified as HTTP parameters!!!**
@@ -91,6 +91,12 @@ Heroku supports Docker containers even with their free dynos. __The current publ
 - differentiates user by Github account???
 - user analytics??
 - __*additional TODOs are in the code itself*__
+
+## Supporting this project!
+I originally created this project because I personally wanted something that was built to my (relatively high) expectations of performance and customizability. I share this project and its hosted service to the public as I thought that this would be something that would benefit others. However, __maintaining such a project__ and __handling the demands of all the users that would use this service__ would incur additional work and costs for myself. Hence, it would be **greatly** appreciated if you could support this project by the following ways:
+1. **Star ⭐ and share** this project!
+2. **Contribute** to the development. Refer to [Contributing](#Contributing)
+3. **Bug tracking!** If you find any issues, please create an Issue so the problem could be fixed as soon as possible.
 
 ## Contributing
 If you are interested in helping make this project better, I highly welcome you to do so. I thank you in advance for your interest. If you are unsure of what you could do to improve the project, you may have a look in TODO list (above), or add to the list yourself
