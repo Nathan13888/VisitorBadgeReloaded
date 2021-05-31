@@ -1,19 +1,18 @@
 {
   "name": "Visitor Badge Reloaded",
-  "description": "Visitor Badge Reloaded is a project inspired by visitor-badge which is no longer maintained, unfortunately.",
+  "description": "A Visitor Badge made with Golang that prioritizes performance and customizability.",
   "keywords": [
-    "badge",
-    "visitor",
-    "visitor-badge",
-    "reloaded",
-    "golang"
+    "visitor-badge-reloaded",
+    "golang",
+    "docker",
+    "shields"
   ],
   "repository": "https://github.com/Nathan13888/VisitorBadgeReloaded",
   "website": "https://github.com/Nathan13888/VisitorBadgeReloaded#readme",
   "stack": "container",
   "env": {
     "KEY": {
-      "description": "Don't change this value",
+      "description": "For hashing CountAPI key; don't change unless you want to break stuff",
       "value": "guess_what",
       "required": true
     }
