@@ -60,8 +60,8 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
 ### Options (add as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string))
 **IMPORTANT: Other than the `page_id` option, there exists additional styling options and functional options (in the future). More details about the options could be found at the bottom of the [Shields.io website](https://shields.io/). Also, all the options are specified as HTTP parameters!!!**
 - `page_id=<your id>` --> identifies your badge, make this unique to yourself. eg. `<your username.visitor.badge.reloaded` or `<username>-<username>`
-- `color=<colour here>` --> the hex colour code of your badge, **do NOT include the `#`**
-- `lcolor=<colour here>` --> set the left colour of the badge, **do NOT include the `#`**
+- `color=<colour here>` --> the hex colour of the text background, **do NOT include the `#`**
+- `lcolor=<colour here>` --> the hex colour of the label background, **do NOT include the `#`**
 - `style=<style name>` --> refer to the Sheilds.IO website for the available options
 - `text=<Some text other than "Visitors">` --> put a customizable label on your badge
 - `logo` --> logo to put beside the badge, go to https://simpleicons.org/ for the available names
@@ -78,6 +78,7 @@ This app could be packaged as a Docker image. Prebuilt docker images of VBR are 
 Heroku supports Docker containers even with their free dynos. __The current public instance of the app is deployed there as well. __Documentation for deploying Docker is found [here](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml). **All the files necessary to deploy to Heroku is already present** within the repository __so this should be rather trivial__. In addition `make deploy-heroku` pushes the git repo to the `heroku` remote if you have configured Heroku already.
 
 You could also deploy to heroku using this widget (thanks to [rzlamrr](https://github.com/rzlamrr) for the PR):
+
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ## "Stuff" Used
