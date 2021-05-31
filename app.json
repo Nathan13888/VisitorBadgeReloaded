@@ -1,0 +1,21 @@
+{
+  "name": "Visitor Badge Reloaded",
+  "description": "Visitor Badge Reloaded is a project inspired by visitor-badge which is no longer maintained, unfortunately.",
+  "keywords": [
+    "badge",
+    "visitor",
+    "visitor-badge",
+    "reloaded",
+    "golang"
+  ],
+  "repository": "https://github.com/Nathan13888/VisitorBadgeReloaded",
+  "website": "https://github.com/Nathan13888/VisitorBadgeReloaded#readme",
+  "stack": "container",
+  "env": {
+    "KEY": {
+      "description": "Don't change this value",
+      "value": "guess_what",
+      "required": true
+    }
+  }
+}

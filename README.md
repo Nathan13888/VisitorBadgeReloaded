@@ -76,6 +76,10 @@ This app could be packaged as a Docker image. Prebuilt docker images of VBR are 
 ### Heroku (recommended)
 Heroku supports Docker containers even with their free dynos. __The current public instance of the app is deployed there as well. __Documentation for deploying Docker is found [here](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml). **All the files necessary to deploy to Heroku is already present** within the repository __so this should be rather trivial__. In addition `make deploy-heroku` pushes the git repo to the `heroku` remote if you have configured Heroku already.
 
+The easiest way to deploy this project is click on the image below
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 ## "Stuff" Used
 - Golang
 - Docker
