@@ -12,14 +12,14 @@ import (
 
 // TODO: add struct to handle badge input
 func generateBadge(SHIELDS_URL string, text string, cnt string, colour string,
-	style string, logo string, logoColour string) []byte {
+	leftColour string, style string, logo string, logoColour string) []byte {
 	if badgeErrorCount > 5 && badgeErrorCount < 10 {
 		SHIELDS_URL = DEFAULT_SHIELDS
 		log.Err(fmt.Errorf("experienced %d errors when generating badges", badgeErrorCount)).Msg("reseting SHIELDS_URL")
 	}
-	data, err := createBadge(SHIELDS_URL, text, cnt, colour, style, logo, logoColour)
+	data, err := createBadge(SHIELDS_URL, text, cnt, colour, leftColour, style, logo, logoColour)
 	if err != nil {
-		fb, err := getFallBackBadge(err, text, cnt, colour, style, logo, logoColour)
+		fb, err := getFallBackBadge(err, text, cnt, colour, leftColour, style, logo, logoColour)
 		if err != nil {
 			logError(err)
 			badgeErrorCount++
@@ -30,19 +30,20 @@ func generateBadge(SHIELDS_URL string, text string, cnt string, colour string,
 	return data
 }
 func createBadge(SHIELDS_URL string, text string, cnt string, colour string,
-	style string, logo string, logoColour string) ([]byte, error) {
+	leftColour string, style string, logo string, logoColour string) ([]byte, error) {
 	log.Debug().
 		Str("shields_url", SHIELDS_URL).
 		Str("text", text).
 		Str("count", cnt).
 		Str("colour", colour).
+		Str("leftColour", leftColour).
 		Str("style", style).
 		Str("logo", logo).
 		Str("logo_colour", logoColour).
 		Msg("Generating badge")
 
-	url := fmt.Sprintf("%s/badge/%s-%s-%s?style=%s&logo=%s&logoColor=%s",
-		SHIELDS_URL, text, cnt, colour, style, logo, logoColour)
+	url := fmt.Sprintf("%s/badge/%s-%s-%s?labelColor=%s&style=%s&logo=%s&logoColor=%s",
+		SHIELDS_URL, text, cnt, colour, leftColour, style, logo, logoColour)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -69,11 +70,11 @@ func createBadge(SHIELDS_URL string, text string, cnt string, colour string,
 }
 
 func getFallBackBadge(err error, text string, cnt string, colour string,
-	style string, logo string, logoColour string) ([]byte, error) {
+	leftColour string, style string, logo string, logoColour string) ([]byte, error) {
 	logError(err)
 	badgeErrorCount++
 	// FALLBACK if local shields fail
-	return createBadge(DEFAULT_SHIELDS, text, cnt, colour, style, logo, logoColour)
+	return createBadge(DEFAULT_SHIELDS, text, cnt, colour, leftColour, style, logo, logoColour)
 }
 
 func getErrorBadge() []byte {
