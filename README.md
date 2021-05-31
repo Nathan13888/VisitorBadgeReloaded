@@ -60,8 +60,8 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
 ### Options (add as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string))
 **IMPORTANT: Other than the `page_id` option, there exists additional styling options and functional options (in the future). More details about the options could be found at the bottom of the [Shields.io website](https://shields.io/). Also, all the options are specified as HTTP parameters!!!**
 - `page_id=<your id>` --> identifies your badge, make this unique to yourself. eg. `<your username.visitor.badge.reloaded` or `<username>-<username>`
-- `color=<colour here>` --> the hex colour code of your badge, **do NOT include the `#`**
-- `lcolor=<colour here>` --> set the left colour of the badge, **do NOT include the `#`**
+- `color=<colour here>` --> the hex colour code of the badge background, **do NOT include the `#`**
+- `lcolor=<colour here>` --> the hex colour code of the label, **do NOT include the `#`**
 - `style=<style name>` --> refer to the Sheilds.IO website for the available options
 - `text=<Some text other than "Visitors">` --> put a customizable label on your badge
 - `logo` --> logo to put beside the badge, go to https://simpleicons.org/ for the available names
