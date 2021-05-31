@@ -17,7 +17,7 @@ import (
 // defaults
 const (
 	colour          = "blue"
-	leftColour	= "grey"
+	leftColour      = "grey"
 	style           = "flat"
 	text            = "Visitors"
 	logo            = "" // https://simpleicons.org/
@@ -118,7 +118,7 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	hash := getHash(page)
 
 	colour := qryParam("color", r, colour)
-	leftColour := qryParam("lcolor", r, leftColour)
+	labelColour := qryParam("lcolor", r, leftColour)
 	style := qryParam("style", r, style)
 	text := qryParam("text", r, text)
 	logo := qryParam("logo", r, logo)
@@ -130,7 +130,16 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 
 	cnt := updateCounter(useCache, hash)
 
-	badge := generateBadge(SHIELDS_URL, text, cnt, colour, leftColour, style, logo, logoColour)
+	badge := generateBadge(SHIELDS_URL,
+		BadgeOptions{
+			Text:        text,
+			Count:       cnt,
+			Colour:      colour,
+			LabelColour: labelColour,
+			Style:       style,
+			Logo:        logo,
+			LogoColour:  logoColour,
+		})
 
 	date := time.Now().Add(time.Minute * -10).Format(http.TimeFormat)
 	w.Header().Set("Content-Type", "image/svg+xml")

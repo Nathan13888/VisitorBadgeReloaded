@@ -10,16 +10,24 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// TODO: add struct to handle badge input
-func generateBadge(SHIELDS_URL string, text string, cnt string, colour string,
-	leftColour string, style string, logo string, logoColour string) []byte {
+type BadgeOptions struct {
+	Text        string
+	Count       string
+	Colour      string // I'm Canadian...
+	LabelColour string
+	Style       string
+	Logo        string
+	LogoColour  string
+}
+
+func generateBadge(SHIELDS_URL string, options BadgeOptions) []byte {
 	if badgeErrorCount > 5 && badgeErrorCount < 10 {
 		SHIELDS_URL = DEFAULT_SHIELDS
 		log.Err(fmt.Errorf("experienced %d errors when generating badges", badgeErrorCount)).Msg("reseting SHIELDS_URL")
 	}
-	data, err := createBadge(SHIELDS_URL, text, cnt, colour, leftColour, style, logo, logoColour)
+	data, err := createBadge(SHIELDS_URL, options)
 	if err != nil {
-		fb, err := getFallBackBadge(err, text, cnt, colour, leftColour, style, logo, logoColour)
+		fb, err := getFallBackBadge(err, options)
 		if err != nil {
 			logError(err)
 			badgeErrorCount++
@@ -29,21 +37,29 @@ func generateBadge(SHIELDS_URL string, text string, cnt string, colour string,
 	}
 	return data
 }
-func createBadge(SHIELDS_URL string, text string, cnt string, colour string,
-	leftColour string, style string, logo string, logoColour string) ([]byte, error) {
+
+func createBadge(SHIELDS_URL string, o BadgeOptions) ([]byte, error) {
 	log.Debug().
 		Str("shields_url", SHIELDS_URL).
-		Str("text", text).
-		Str("count", cnt).
-		Str("colour", colour).
-		Str("leftColour", leftColour).
-		Str("style", style).
-		Str("logo", logo).
-		Str("logo_colour", logoColour).
+		Str("text", o.Text).
+		Str("count", o.Count).
+		Str("colour", o.Colour).
+		Str("labelColour", o.LabelColour).
+		Str("style", o.Style).
+		Str("logo", o.Logo).
+		Str("logo_colour", o.LogoColour).
 		Msg("Generating badge")
 
 	url := fmt.Sprintf("%s/badge/%s-%s-%s?labelColor=%s&style=%s&logo=%s&logoColor=%s",
-		SHIELDS_URL, text, cnt, colour, leftColour, style, logo, logoColour)
+		SHIELDS_URL,
+		o.Text,
+		o.Count,
+		o.Colour,
+		o.LabelColour,
+		o.Style,
+		o.Logo,
+		o.LogoColour,
+	)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -69,12 +85,11 @@ func createBadge(SHIELDS_URL string, text string, cnt string, colour string,
 	return body, nil
 }
 
-func getFallBackBadge(err error, text string, cnt string, colour string,
-	leftColour string, style string, logo string, logoColour string) ([]byte, error) {
+func getFallBackBadge(err error, options BadgeOptions) ([]byte, error) {
 	logError(err)
 	badgeErrorCount++
 	// FALLBACK if local shields fail
-	return createBadge(DEFAULT_SHIELDS, text, cnt, colour, leftColour, style, logo, logoColour)
+	return createBadge(DEFAULT_SHIELDS, options)
 }
 
 func getErrorBadge() []byte {
