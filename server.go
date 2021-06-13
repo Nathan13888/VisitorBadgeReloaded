@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -129,6 +130,14 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cnt := updateCounter(useCache, hash)
+	custom := qryParam("custom", r, "")
+	if len(custom) > 0 {
+		escaped, _ := url.QueryUnescape(custom)
+		cnt = strings.Replace(
+			escaped,
+			"CNT", cnt, 1)
+		log.Info().Msg(cnt)
+	}
 
 	badge := generateBadge(SHIELDS_URL,
 		BadgeOptions{
