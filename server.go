@@ -120,7 +120,7 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	colour := qryParam("color", r, colour)
 	labelColour := qryParam("lcolor", r, leftColour)
 	style := qryParam("style", r, style)
-	text := qryParam("text", r, text)
+	label := qryParam("text", r, text)
 	logo := qryParam("logo", r, logo)
 	logoColour := qryParam("logoColor", r, logoColour)
 	useCache := false
@@ -132,8 +132,8 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 
 	badge := generateBadge(SHIELDS_URL,
 		BadgeOptions{
-			Text:        text,
-			Count:       cnt,
+			Label:       label,
+			Text:        cnt,
 			Colour:      colour,
 			LabelColour: labelColour,
 			Style:       style,

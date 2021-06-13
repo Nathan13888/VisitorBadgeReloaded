@@ -11,8 +11,8 @@ import (
 )
 
 type BadgeOptions struct {
+	Label       string
 	Text        string
-	Count       string
 	Colour      string // I'm Canadian...
 	LabelColour string
 	Style       string
@@ -41,8 +41,8 @@ func generateBadge(SHIELDS_URL string, options BadgeOptions) []byte {
 func createBadge(SHIELDS_URL string, o BadgeOptions) ([]byte, error) {
 	log.Debug().
 		Str("shields_url", SHIELDS_URL).
-		Str("text", o.Text).
-		Str("count", o.Count).
+		Str("text", o.Label).
+		Str("count", o.Text).
 		Str("colour", o.Colour).
 		Str("labelColour", o.LabelColour).
 		Str("style", o.Style).
@@ -52,8 +52,8 @@ func createBadge(SHIELDS_URL string, o BadgeOptions) ([]byte, error) {
 
 	url := fmt.Sprintf("%s/badge/%s-%s-%s?labelColor=%s&style=%s&logo=%s&logoColor=%s",
 		SHIELDS_URL,
+		o.Label,
 		o.Text,
-		o.Count,
 		o.Colour,
 		o.LabelColour,
 		o.Style,
