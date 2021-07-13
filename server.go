@@ -162,7 +162,8 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 }
 
 func getWebsite(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "A website is currently unavailable :(")
+	// fmt.Fprintf(w, "A website is currently unavailable :(")
+	http.Redirect(w, r, "https://github.com/Nathan13888/VisitorBadgeReloaded", http.StatusTemporaryRedirect)
 }
 
 func getPing(w http.ResponseWriter, r *http.Request) {
