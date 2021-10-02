@@ -62,7 +62,7 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
 - `page_id=<your id>` --> identifies your badge, make this unique to yourself. eg. `<your username.visitor.badge.reloaded` or `<username>-<username>`
 - `color=<colour here>` --> the hex colour of the text background, **do NOT include the `#`**
 - `lcolor=<colour here>` --> the hex colour of the label background, **do NOT include the `#`**
-- `style=<style name>` --> refer to the Sheilds.IO website for the available options
+- `style=<style name>` --> refer to the Shields.IO website for the available options
 - `text=<Some text other than "Visitors">` --> put a customizable label on your badge
 - `logo` --> logo to put beside the badge, go to https://simpleicons.org/ for the available names
 - `logoColor` --> refer to `color` for the formatting
