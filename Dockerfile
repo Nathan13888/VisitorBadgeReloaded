@@ -20,17 +20,20 @@ ENV DEBUG DISABLED
 ENV NODE_ENV production
 
 ## TIMEZONE
-RUN apk add tzdata
-RUN apk add nodejs
-RUN apk add bash
+RUN apk add --no-cache tzdata nodejs bash
 RUN cp /usr/share/zoneinfo/America/Toronto /etc/localtime
 
 COPY --from=builder /build/bin/vbr /app/vbr
 COPY --from=builder /build/docker-wrapper.sh /app/docker-wrapper.sh
+
+## Heroku Exec
+RUN apk add --no-cache curl openssh python3
+COPY --from=builder /build/heroku-exec.sh /app/.profile.d/heroku-exec.sh
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 COPY --from=shields /usr/src/app /app/shields
 
 EXPOSE 8080/tcp
 EXPOSE 9090/tcp
 
-CMD [ "/bin/bash", "docker-wrapper.sh" ]
+CMD /bin/bash .profile.d/heroku-exec.sh && /bin/bash docker-wrapper.sh
