@@ -15,6 +15,9 @@ docker-build:
 docker-run:
 	docker run -it --rm -p 80:8080 -p 443:8081 -p 9090:9090 vbr
 
+docker-debug:
+	docker run -it --rm -p 80:8080 -p 443:8081 -p 9090:9090 --entrypoint bash vbr
+
 publish:
 	make publish-ghcr
 
