@@ -151,9 +151,10 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 		})
 
 	date := time.Now().Add(time.Minute * -10).Format(http.TimeFormat)
-	expiry := time.Now().Add(time.Minute * 10).Format(http.TimeFormat)
-	if len(qryParam("non-unique", r, "")) > 0 {
-		expiry = date
+	expiry := date
+	if len(qryParam("unique", r, "")) > 0 {
+		expiry = time.Now().Add(time.Minute * 10).Format(http.TimeFormat)
+	} else {
 		w.Header().Set("Cache-Control", "no-cache,max-age=0")
 	}
 
