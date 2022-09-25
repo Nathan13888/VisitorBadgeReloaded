@@ -1,6 +1,6 @@
 module github.com/Nathan13888/VisitorBadgeReloaded
 
-go 1.15
+go 1.19
 
 require (
 	github.com/allegro/bigcache v1.2.1
