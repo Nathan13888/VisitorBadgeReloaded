@@ -1,0 +1,25 @@
+version: "3.7"
+
+networks:
+  web:
+    external: true
+
+services:
+  vbr:
+    image: docker.pkg.github.com/nathan13888/visitorbadgereloaded/vbr:latest
+    restart: unless-stopped
+    container_name: vbr
+    environment:
+      - "KEY=guess_what"
+    expose:
+      - 9090
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+        #- "traefik.http.routers.vbr-router.tls.certResolver=lets-encrypt"
+      - "traefik.http.routers.vbr-router.rule=Host(`vbr.wocr.tk`)"
+      - "traefik.http.routers.vbr-router.service=vbr"
+      - "traefik.http.services.vbr.loadbalancer.server.port=8080"
+    networks:
+      - web
+
