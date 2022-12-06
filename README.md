@@ -1,6 +1,9 @@
 # Visitor Badge Reloaded
 
-![](https://visitor-badge-reloaded.herokuapp.com/badge?page_id=visitor-badge-reloaded-visitors&color=55acb7&style=for-the-badge&logo=Github)
+> 12/06/22: UPDATED HOSTING!!! Please use vbr.wocr.tk instead of the old Heroku domain ([more details below]())
+
+
+![](https://vbr.wocrk.tk/badge?page_id=visitor-badge-reloaded-visitors&color=55acb7&style=for-the-badge&logo=Github)
 
 [![](https://goreportcard.com/badge/github.com/Nathan13888/VisitorBadgeReloaded)](https://goreportcard.com/report/github.com/Nathan13888/VisitorBadgeReloaded)
 [![](https://img.shields.io/badge/License-MIT%202.0-blue.svg)](https://github.com/Nathan13888/VisitorBadgeReloaded/blob/master/LICENSE)
@@ -49,11 +52,11 @@ Hence, something of **better performance** and **functionality** *must* be made!
 ## Migrating From Visitor Badge
 ```
 TLDR; REPLACE THE DOMAIN NAME
-ie. 'visitor-badge.glitch.me/badge?page_id=YOURPAGEID' --> 'visitor-badge-reloaded.herokuapp.com/badge?page_id=YOURPAGEID'
+ie. 'visitor-badge.glitch.me/badge?page_id=YOURPAGEID' --> 'https://vbr.wocr.tk/badge?page_id=YOURPAGEID'
 ```
 **Visitor Badge Reloaded** has ALL the same features as the original [Visitor Badge](https://github.com/jwenjian/visitor-badge) with EVEN MORE FEATURES!
 
-This means that all you have to do is replace the __url__ of the badge with `https://visitor-badge-reloaded.herokuapp.com/badge?page_id=<your own page_id here>`. The total visits will remain the **exact same** as well!
+This means that all you have to do is replace the __url__ of the badge with `https://vbr.wocr.tk/badge?page_id=<your own page_id here>`. The total visits will remain the **exact same** as well!
 
 Also, **VBR features could be configured as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string)**!
 
@@ -74,8 +77,11 @@ If at any point, you feel the need to host your own instace, you could refer to 
 ### Docker/Kubernetes
 This app could be packaged as a Docker image. Prebuilt docker images of VBR are also available on Docker Hub and on the Github Container Registry. __Just run the relevant commands found in the `Makefile`__. Then deploy to your choosen cloud service or even to your own server. However, note that there is no HTTPS support and VBR should be placed behind something else that provides HTTPS (eg. reverse proxy, Heroku...).
 
-### Heroku (recommended)
-Heroku supports Docker containers even with their free dynos. __The current public instance of the app is deployed there as well. __Documentation for deploying Docker is found [here](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml). **All the files necessary to deploy to Heroku is already present** within the repository __so this should be rather trivial__. In addition `make deploy-heroku` pushes the git repo to the `heroku` remote if you have configured Heroku already.
+### Heroku
+
+> Please note that Heroku will no longer offer free dynos starting November 28, 2022!
+
+Documentation for deploying Docker is found [here](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml). **All the files necessary to deploy to Heroku is already present** within the repository so this should be rather trivial. In addition `make deploy-heroku` pushes the git repo to the `heroku` remote if you have configured Heroku already.
 
 You could also deploy to heroku using this widget (thanks to [rzlamrr](https://github.com/rzlamrr) for the PR):
 
