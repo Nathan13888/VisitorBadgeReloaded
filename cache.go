@@ -46,7 +46,7 @@ func updateCachedCount(hash string) string {
 	entry, err := cache.Get(hash)
 	// return CountAPI value if entry does not exist in cache
 	if err != nil {
-		capi := updateCountAPI(hash)
+		capi := updateRedis(hash)
 		if err == bigcache.ErrEntryNotFound {
 			// update cached value
 			log.Info().Str("page", hash).Msg("Cached")
@@ -64,7 +64,7 @@ func updateCachedCount(hash string) string {
 
 	// update CountAPI count in a separate go routine
 	go func() {
-		res := updateCountAPI(hash)
+		res := updateRedis(hash)
 		// "sync" with CountAPI every so often
 		if res[len(res)-1] == '0' {
 			setCachedCount(hash, []byte(res))

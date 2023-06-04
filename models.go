@@ -10,5 +10,6 @@ type StatusResponse struct {
 	ProcessedRequests int64  `json:"processed_requests"`
 	Uptime            int64  `json:"uptime"`
 	CodeRepository    string `json:"source_code_repository"`
-	RedisStatus		  string `json:"redis_status"`
+	RedisStatus       string `json:"redis_status"`
+	AvgRespMS         int    `json:"average_response_ms"`
 }
