@@ -1,4 +1,6 @@
-# Visitor Badge Reloaded
+# Visitor Badge Reloaded ✨
+
+**Work In Progress**: K8S support (Helm charts), High availability, Personalized Analytics About Visitors, Rate limiting, Upgraded Shields.io
 
 > 6/03/23: VBR will be **self-hosting Redis**. Since CountAPI seem to be somewhat semi-permanantly broken, many existing badges have lost their count. However I was able to recover over **300k lines of logs**, so I should be able to reconstruct a relatively accurate count of all the badges accesses within the **past 3 months**
 
