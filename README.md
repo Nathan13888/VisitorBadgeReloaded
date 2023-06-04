@@ -2,6 +2,8 @@
 
 **Work In Progress**: K8S support (Helm charts), High availability, Personalized Analytics About Visitors, Rate limiting, Upgraded Shields.io
 
+> 6/04/23: All cached records have been successfully restored!
+
 > 6/03/23: VBR will be **self-hosting Redis**. Since CountAPI seem to be somewhat semi-permanantly broken, many existing badges have lost their count. However I was able to recover over **300k lines of logs**, so I should be able to reconstruct a relatively accurate count of all the badges accesses within the **past 3 months**
 
 > 5/28/23: It has come to my attention that countapi.xyz has gone down... It's quite unfortunate but it looks like I'll be implementing a new storage backend in the future.
