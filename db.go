@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 )
 
-var redisAddr = GetENV("REDIS_ADDR", "localhost:6379")
+var redisAddr = GetENV("REDIS_URL", "localhost:6379")
 var rdb *redis.Client
 var ctx = context.Background()
 
-func ConnectRedis(address string) {
+func ConnectRedis() {
 	log.Info().Msg("Initializing Redis connection")
 
 	// rdb = redis.NewClient(&redis.Options{
@@ -33,22 +34,22 @@ func ConnectRedis(address string) {
 	// redis.SetLogger(logger)
 
 	// TODO: config Context ctx
+	// TODO: health check
 
+	log.Info().Msg("Pinging Redis")
 	_, err = rdb.Ping(ctx).Result()
 	if err != nil {
 		log.Fatal().Err(err)
 	}
 }
 
-// TODO: health check
-
 func QueryHash(hash string) string {
-	intCmd := rdb.Incr(ctx, hash)
-	if intCmd.Err() != nil {
-		log.Error().Err(intCmd.Err())
+	val, err := rdb.Incr(ctx, hash).Result()
+	if err != nil {
+		log.Debug().Err(err)
 		return "error"
 	}
-	return intCmd.String()
+	return strconv.FormatInt(val, 10)
 }
 
 func GetHash(hash string) string {
@@ -57,7 +58,7 @@ func GetHash(hash string) string {
 	if err == redis.Nil { // key does not exist: initialize key
 		// TODO:
 	} else if err != nil {
-		log.Error().Err(err)
+		logError(err)
 		return ""
 	}
 	return val

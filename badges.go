@@ -93,7 +93,7 @@ func getFallBackBadge(err error, options BadgeOptions) ([]byte, error) {
 }
 
 func getErrorBadge() []byte {
-	log.Error().Msg("Generated ERROR badge")
+	log.Debug().Msg("Generated ERROR badge")
 	return []byte{} // TODO: generate SVG error badge
 }
 

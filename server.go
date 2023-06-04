@@ -48,6 +48,7 @@ func main() {
 
 	// configure logging
 	configureLogger(debug)
+	ConnectRedis()
 
 	r := mux.NewRouter()
 	server := &http.Server{

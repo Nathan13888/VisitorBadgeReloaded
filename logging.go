@@ -37,7 +37,7 @@ func logError(err error) {
 }
 
 func logErrorMsg(err error, msg string) {
-	log.Error().Stack().Err(err).Msg(msg)
+	log.Debug().Stack().Err(err).Msg(msg)
 }
 
 func loggingMiddleware(next http.Handler) http.Handler {
