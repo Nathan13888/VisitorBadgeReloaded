@@ -41,6 +41,12 @@ func main() {
 	debug := false
 	if strings.EqualFold(GetENV("DEBUG", ""), "enabled") {
 		debug = true
+		log.Debug().Msg("Enabled Debug Mode.")
+	}
+	maintenance := false
+	if strings.EqualFold(GetENV("MAINTENANCE", ""), "enabled") {
+		maintenance = true
+		log.Info().Msg("Enabled Maintenance Mode.")
 	}
 
 	if strings.EqualFold(GetENV("LOCAL_SHIELDS", ""), "enabled") {
@@ -72,7 +78,9 @@ func main() {
 	r.HandleFunc("/status", getStatus).Methods("GET")
 	r.HandleFunc("/badge", getBadge).Methods("GET")
 	// TODO: add auth middleware
-	r.HandleFunc("/rec", getRec).Methods("GET")
+	if maintenance {
+		r.HandleFunc("/rec", getRec).Methods("GET")
+	}
 
 	r.Use(loggingMiddleware)
 

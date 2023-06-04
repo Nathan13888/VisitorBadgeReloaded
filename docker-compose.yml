@@ -18,6 +18,7 @@ services:
       - "KEY=guess_what"
       # - "REDIS_URL=redis://vbr:vbr_verysecurepassword1234yes@redis:6379/0" # TODO: EDIT
       - "REDIS_URL=redis://:@redis:6379/0"
+      - "MAINTENANCE=enabled" # options: enabled, <anything else>
     ports:
       - "127.0.0.1:8080:8080"
     expose:
