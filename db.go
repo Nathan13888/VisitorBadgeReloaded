@@ -52,6 +52,19 @@ func QueryHash(hash string) string {
 	return strconv.FormatInt(val, 10)
 }
 
+func IncrHashBy(hash string, cnt int64) int64 {
+	if cnt < 0 {
+		return -1
+	}
+	val, err := rdb.IncrBy(ctx, hash, cnt).Result()
+	if err != nil {
+		log.Debug().Err(err)
+		return -1
+	}
+
+	return val
+}
+
 func GetHash(hash string) string {
 	val, err := rdb.Get(ctx, hash).Result()
 

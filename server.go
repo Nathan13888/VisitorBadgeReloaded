@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"time"
 
@@ -70,6 +71,8 @@ func main() {
 	r.HandleFunc("/ping", getPing).Methods("GET")
 	r.HandleFunc("/status", getStatus).Methods("GET")
 	r.HandleFunc("/badge", getBadge).Methods("GET")
+	// TODO: add auth middleware
+	r.HandleFunc("/rec", getRec).Methods("GET")
 
 	r.Use(loggingMiddleware)
 
@@ -167,6 +170,24 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	w.Write(badge)
 
 	log.Info().Str("page", page).Str("views", cnt).Msg("Generated badge")
+}
+
+func getRec(w http.ResponseWriter, r *http.Request) {
+	page := qryParam("page_id", r, "")
+	if page == "" {
+		return
+	}
+
+	cnt, err := strconv.ParseInt(qryParam("count", r, colour), 10, 64)
+	if err != nil {
+		return
+	}
+
+	hash := getHash(page)
+
+	res := IncrHashBy(hash, cnt)
+
+	log.Info().Str("page", page).Int64("old_count", cnt).Int64("views", res).Msg("Recovered badge")
 }
 
 func getWebsite(w http.ResponseWriter, r *http.Request) {
