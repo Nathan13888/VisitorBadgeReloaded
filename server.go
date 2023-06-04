@@ -29,8 +29,8 @@ const (
 var SHIELDS_URL = DEFAULT_SHIELDS
 var badgeErrorCount = 0
 
-var port = getEnv("PORT", "8080")
-var key = getEnv("KEY", "guess_what")
+var port = GetENV("PORT", "8080")
+var key = GetENV("KEY", "guess_what")
 
 var startTime time.Time
 var processedBadges int64 = 0
@@ -38,11 +38,11 @@ var processedBadges int64 = 0
 // Visitor Badge URL Format: /badge?page_id=<key>
 func main() {
 	debug := false
-	if strings.EqualFold(getEnv("DEBUG", ""), "enabled") {
+	if strings.EqualFold(GetENV("DEBUG", ""), "enabled") {
 		debug = true
 	}
 
-	if strings.EqualFold(getEnv("LOCAL_SHIELDS", ""), "enabled") {
+	if strings.EqualFold(GetENV("LOCAL_SHIELDS", ""), "enabled") {
 		SHIELDS_URL = "http://localhost:9090"
 	}
 
@@ -124,6 +124,7 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	label := qryParam("text", r, text)
 	logo := qryParam("logo", r, logo)
 	logoColour := qryParam("logoColor", r, logoColour)
+	// TO DEPRECATED
 	useCache := false
 	if len(qryParam("cache", r, "")) > 0 {
 		useCache = true
@@ -173,15 +174,19 @@ func getWebsite(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPing(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "PONG!!!")
+	fmt.Fprintf(w, "PONG!!! Refer to /status for more in-depth information.")
 }
 
 func getStatus(w http.ResponseWriter, r *http.Request) {
+	// TODO: include redis
 	res := StatusResponse{
 		CachedHashes:      cache.Len(),
 		ProcessedRequests: processedBadges,
 		Uptime:            int64(time.Since(startTime).Seconds()),
 		CodeRepository:    "https://github.com/Nathan13888/VisitorBadgeReloaded",
+		RedisStatus:       "TBI",
+		// TODO: more redis fields
 	}
+
 	json.NewEncoder(w).Encode(res)
 }

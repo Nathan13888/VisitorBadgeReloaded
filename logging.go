@@ -57,6 +57,11 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// TODO: implement redis logger
+// func loggingRedis(ctx context.Context, format string, v ...interface{}) {
+
+// }
+
 func getTime() string {
 	return time.Now().Format(timeFormat)
 }

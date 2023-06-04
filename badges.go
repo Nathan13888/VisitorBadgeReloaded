@@ -99,12 +99,18 @@ func getErrorBadge() []byte {
 
 func updateCounter(useCache bool, hash string) string {
 	if !useCache {
-		return updateCountAPI(hash)
+		// return updateCountAPI(hash)
+		return updateRedis(hash)
 	}
 	// look up cache
 	return updateCachedCount(hash) // note that this will return the CountAPI count if hash does not exist
 }
 
+func updateRedis(hash string) string {
+	return QueryHash(hash)
+}
+
+// DEPRECATED:
 func updateCountAPI(hash string) string {
 	url := "https://api.countapi.xyz/hit/visitor-badge/" + hash
 	res, err := http.Get(url)

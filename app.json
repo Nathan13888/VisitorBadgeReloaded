@@ -12,7 +12,7 @@
   "stack": "container",
   "env": {
     "KEY": {
-      "description": "For hashing CountAPI key; don't change unless you want to break stuff",
+      "description": "DEPRECIATED: For hashing CountAPI key; don't change unless you want to break stuff",
       "value": "guess_what",
       "required": true
     }

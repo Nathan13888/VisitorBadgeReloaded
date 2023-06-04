@@ -26,7 +26,7 @@ func qryParam(param string, r *http.Request, defValue string) string {
 	return url.QueryEscape(qry[0])
 }
 
-func getEnv(key string, defValue string) string {
+func GetENV(key string, defValue string) string {
 	env := os.Getenv(key)
 	if env == "" {
 		return defValue
