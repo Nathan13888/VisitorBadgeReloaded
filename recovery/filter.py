@@ -1,6 +1,7 @@
 # asdflkasjdfklajsdkf page=Nezhinskiy views=186
 from collections import defaultdict
 import json
+import re
 
 
 hashes = defaultdict(lambda:0)
@@ -15,12 +16,13 @@ def can_cast_to_integer(string):
 def process(line):
     sss = line.split()
     hsh = ""
-    vws = -1
+    vws = ""
     for s in sss:
         if s.startswith("page="):
             hsh = s[5:]
         elif s.startswith("views="):
             vws = s[6:]
+    vws = re.sub(r'\D', '', vws)
     if len(hsh) == 0 or len(vws)==0:
         return
     if not can_cast_to_integer(vws):
