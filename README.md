@@ -1,4 +1,4 @@
-# Visitor Badge Reloaded
+# Visitor Badge Reloaded ✨
 
 **Work In Progress**: K8S support (Helm charts), High availability, Personalized Analytics About Visitors, Rate limiting, Upgraded Shields.io
 
