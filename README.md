@@ -39,7 +39,7 @@ Hence, something of **better performance** and **functionality** *must* be made!
 | **Potential downtime?** | Nope, as long as Heroku is up. | Glitch instance may reach a request limit 😢 |
 | **Self hosting friendly?** | There are instructions and I am always open to help! | Questionable documentation? |
 | **Maintained and under development?** | Yes... | No, according to owner himself |
-| **Source code is readible?** | Maybe not? | One file but not much better for readibility |
+| **Source code is readable?** | Maybe not? | One file but not much better for readability |
 
 - **direct replacement** (refer to [Migrating From Visitor Badge](#migrating-from-visitor-badge))
 - (almost) fully customizable badge
@@ -55,8 +55,8 @@ Hence, something of **better performance** and **functionality** *must* be made!
 - Logo: *no logo*
 - Cache: *disabled*
 
-### Examples
-- 
+<!-- ### Examples
+-  -->
 
 ## Migrating From Visitor Badge
 ```
