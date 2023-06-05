@@ -1,7 +1,5 @@
 # Visitor Badge Reloaded ✨
 
-**Work In Progress**: K8S support (Helm charts), High availability, Personalized Analytics About Visitors, Rate limiting, Upgraded Shields.io
-
 > 6/04/23: All cached records have been successfully restored!
 
 > 6/03/23: VBR will be **self-hosting Redis**. Since CountAPI seem to be somewhat semi-permanantly broken, many existing badges have lost their count. However I was able to recover over **300k lines of logs**, so I should be able to reconstruct a relatively accurate count of all the badges accesses within the **past 3 months**
@@ -32,12 +30,12 @@ Hence, something of **better performance** and **functionality** *must* be made!
 ---
 
 <!-- TODO: update comparison -->
-## VBR vs [Visitor-Badge](https://github.com/jwenjian/visitor-badge)
+## 📊 VBR vs [Visitor-Badge](https://github.com/jwenjian/visitor-badge)
 |   | VBR | Visitor-Badge |
 --- | --- | ---
 | **Programming Language** | Golang | Python |
-| **Performance** | Badges are generated **completely** locally | Flask, Depends on third-party API for storage 🤔 |
-| **Features** | Many badges to customize. Basically all things  | Simple Visitor Badge |
+| **Performance** | Badges are generated **completely** locally (both Redis, Shields.io are hosted in GCP) | Flask, Depends on third-party API for storage 🤔 |
+| **Features** | Many badges to customize. Basically all things customizable through Shields.io.  | Simple visitor badge. |
 | **Potential downtime?** | Nope, as long as Heroku is up. | Glitch instance may reach a request limit 😢 |
 | **Self hosting friendly?** | Supports Docker (and Helm chart WIP). There are clear instructions and I am always open to help! | Start script and source available. No instructions in README. |
 | **Development?** | Semi-frequent updates and refreshes. PRs and issues are regularly reviewed and addressed. | Not currently (according to owner himself) |
@@ -45,10 +43,10 @@ Hence, something of **better performance** and **functionality** *must* be made!
 - **direct replacement** (refer to [Migrating From Visitor Badge](#migrating-from-visitor-badge))
 - (almost) fully customizable badge
 
-## Benchmarks
+## 🏎️ Benchmarks
 *coming soon...*
 
-## Settings/Configuration
+## ⚙️ Settings/Configuration
 ### Defaults
 - Colour: "blue"
 - Style: "square"
@@ -56,43 +54,43 @@ Hence, something of **better performance** and **functionality** *must* be made!
 - Logo: *no logo*
 - Cache: *disabled*
 
-### Examples
-- Different text background
+### Examples 🧪
+#### Different text background
 
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=590d22&style=for-the-badge&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=a4133c&style=for-the-badge&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=ff4d6d&style=for-the-badge&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=ffb3c1&style=for-the-badge&logo=Github)
 
-- Different label background
+#### Different label background
 
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=a4133c&color=555555&style=for-the-badge&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ff4d6d&color=555555&style=for-the-badge&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ffb3c1&color=555555&style=for-the-badge&logo=Github)
 
-- Different style
+#### Different style
 
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=a4133c&color=555555&style=plastic&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ff4d6d&color=555555&style=flat&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ffb3c1&color=555555&style=flat-square&logo=Github)
 
-- Different text
+#### Different text
 
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Fans&lcolor=a4133c&color=555555&style=for-the-badge&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Lovers&lcolor=ff4d6d&color=555555&style=for-the-badge&logo=Github)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Workers&lcolor=ffb3c1&color=555555&style=for-the-badge&logo=Github)
 
-- Different logo
+#### Different logo
 
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=fff&color=000&style=for-the-badge&logo=Github&logoColor=181717)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=Canva&logoColor=00C4CC)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=4chan&logoColor=006600)
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=Snapchat&logoColor=FFFC00)
 
-## Migrating From Visitor Badge
+## 🚢 Migrating From Visitor Badge
 ```
 TLDR; REPLACE THE DOMAIN NAME
 ie. 'visitor-badge.glitch.me/badge?page_id=YOURPAGEID' --> 'https://vbr.wocr.tk/badge?page_id=YOURPAGEID'
@@ -103,7 +101,7 @@ This means that all you have to do is replace the __url__ of the badge with `htt
 
 Also, **VBR features could be configured as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string)**!
 
-### Options (add as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string))
+### Options (add as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string)) 👀
 **IMPORTANT: Other than the `page_id` option, there exists additional styling options and functional options (in the future). More details about the options could be found at the bottom of the [Shields.io website](https://shields.io/). Also, all the options are specified as HTTP parameters!!!**
 - `page_id=<your id>` --> identifies your badge, make this unique to yourself. eg. `<your username.visitor.badge.reloaded` or `<username>-<username>`
 - `color=<colour here>` --> the hex colour of the text background, **do NOT include the `#`**
@@ -114,13 +112,32 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
 - `logoColor` --> refer to `color` for the formatting
 - `cache` --> *just put `&cache=on` at the end of the badge url
 
-## Supporting this project!
+## 🚀 Feature Roadmap
+- Deployment
+  - [ ] K8S support (Helm charts)
+  - [ ] High availability (stateless)
+  - [ ] Upgraded Shields.io
+  - [ ] Automated scheduled backups: badge count,
+- API Improvements
+  - [ ] Rate limiting, Prevent Abuse
+  - [ ] /health, /healthz endpoints
+  - [ ] Improved /status information.
+  - [ ] Uptime Monitoring
+- Code base
+  - [ ] Refactor code base
+  - [ ] Complete TODO comments
+  - [ ] Deprecate "Bigcache"
+- New Website
+  - [ ] Personalized Analytics About Visitors
+  - [ ] Automated import from other projects
+
+## 🥳 Supporting this project!
 I originally created this project because I personally wanted something that was built to my (relatively high) expectations of performance and customizability. I share this project and its hosted service to the public as I thought that this would be something that would benefit others. However, __maintaining such a project__ and __handling the demands of all the users that would use this service__ would incur additional work and costs for myself. Hence, it would be **greatly** appreciated if you could support this project by the following ways:
 1. **Star ⭐ and share** this project!
 2. **Contribute** to the development. Refer to [Contributing](#Contributing)
 3. **Bug tracking!** If you find any issues, please create an Issue so the problem could be fixed as soon as possible.
 
-## Deploying your own instance (self-hosting)
+## 📦 Deploying your own instance (self-hosting)
 If at any point, you feel the need to host your own instace, you could refer to the following information to do so. I personally don't believe in such a need but you are welcome to do so.
 
 ### Docker/Kubernetes
@@ -136,7 +153,7 @@ You could also deploy to heroku using this widget (thanks to [rzlamrr](https://g
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
-## Software Used
+## 💻 Software Used
 - Golang
 - Docker
 - Mux (router)
