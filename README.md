@@ -56,7 +56,40 @@ Hence, something of **better performance** and **functionality** *must* be made!
 - Cache: *disabled*
 
 ### Examples
-- 
+- Different text background
+
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=590d22&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=a4133c&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=ff4d6d&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=ffb3c1&style=for-the-badge&logo=Github)
+
+- Different label background
+
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=a4133c&color=555555&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ff4d6d&color=555555&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ffb3c1&color=555555&style=for-the-badge&logo=Github)
+
+- Different style
+
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=a4133c&color=555555&style=plastic&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ff4d6d&color=555555&style=flat&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ffb3c1&color=555555&style=flat-square&logo=Github)
+
+- Different text
+
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Fans&lcolor=a4133c&color=555555&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Lovers&lcolor=ff4d6d&color=555555&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Workers&lcolor=ffb3c1&color=555555&style=for-the-badge&logo=Github)
+
+- Different logo
+
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=fff&color=000&style=for-the-badge&logo=Github&logoColor=181717)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=Canva&logoColor=00C4CC)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=4chan&logoColor=006600)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=Snapchat&logoColor=FFFC00)
 
 ## Migrating From Visitor Badge
 ```
