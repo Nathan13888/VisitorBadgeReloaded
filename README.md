@@ -14,6 +14,7 @@
 
 ![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=55acb7&style=for-the-badge&logo=Github)
 
+<!-- TODO: host this with VBR too -->
 [![](https://goreportcard.com/badge/github.com/Nathan13888/VisitorBadgeReloaded)](https://goreportcard.com/report/github.com/Nathan13888/VisitorBadgeReloaded)
 [![](https://img.shields.io/badge/License-MIT%202.0-blue.svg)](https://github.com/Nathan13888/VisitorBadgeReloaded/blob/master/LICENSE)
 [![Coverage Status](https://coveralls.io/repos/github/Nathan13888/VisitorBadgeReloaded/badge.svg?branch=master)](https://coveralls.io/github/Nathan13888/VisitorBadgeReloaded?branch=master)
@@ -30,16 +31,16 @@ Hence, something of **better performance** and **functionality** *must* be made!
 
 ---
 
+<!-- TODO: update comparison -->
 ## VBR vs [Visitor-Badge](https://github.com/jwenjian/visitor-badge)
 |   | VBR | Visitor-Badge |
 --- | --- | ---
 | **Programming Language** | Golang | Python |
-| **Performance** | Arguably better? Mux router is quick at matching and generation functions are optimized. Caching is available as well. | Flask... 🤔 |
-| **Features** | There are many additional features for customizability... | Select your page_id? |
+| **Performance** | Badges are generated **completely** locally | Flask, Depends on third-party API for storage 🤔 |
+| **Features** | Many badges to customize. Basically all things  | Simple Visitor Badge |
 | **Potential downtime?** | Nope, as long as Heroku is up. | Glitch instance may reach a request limit 😢 |
-| **Self hosting friendly?** | There are instructions and I am always open to help! | Questionable documentation? |
-| **Maintained and under development?** | Yes... | No, according to owner himself |
-| **Source code is readable?** | Maybe not? | One file but not much better for readability |
+| **Self hosting friendly?** | Supports Docker (and Helm chart WIP). There are clear instructions and I am always open to help! | Start script and source available. No instructions in README. |
+| **Development?** | Semi-frequent updates and refreshes. PRs and issues are regularly reviewed and addressed. | Not currently (according to owner himself) |
 
 - **direct replacement** (refer to [Migrating From Visitor Badge](#migrating-from-visitor-badge))
 - (almost) fully customizable badge
@@ -113,7 +114,13 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
 - `logoColor` --> refer to `color` for the formatting
 - `cache` --> *just put `&cache=on` at the end of the badge url
 
-## Deploying your own instance
+## Supporting this project!
+I originally created this project because I personally wanted something that was built to my (relatively high) expectations of performance and customizability. I share this project and its hosted service to the public as I thought that this would be something that would benefit others. However, __maintaining such a project__ and __handling the demands of all the users that would use this service__ would incur additional work and costs for myself. Hence, it would be **greatly** appreciated if you could support this project by the following ways:
+1. **Star ⭐ and share** this project!
+2. **Contribute** to the development. Refer to [Contributing](#Contributing)
+3. **Bug tracking!** If you find any issues, please create an Issue so the problem could be fixed as soon as possible.
+
+## Deploying your own instance (self-hosting)
 If at any point, you feel the need to host your own instace, you could refer to the following information to do so. I personally don't believe in such a need but you are welcome to do so.
 
 ### Docker/Kubernetes
@@ -129,27 +136,11 @@ You could also deploy to heroku using this widget (thanks to [rzlamrr](https://g
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
-## "Stuff" Used
+## Software Used
 - Golang
 - Docker
 - Mux (router)
 - Zerolog (logger)
+- Redis (Cache and Database)
 - shields.io
 
-## TODO
-- **GOT FEATURE REQUEST???** __Send me an issue!__
-- website homepage
-- local badge generator (instead of relaying shields.io)
-- differentiates user by IP
-- differentiates user by Github account???
-- user analytics??
-- __*additional TODOs are in the code itself*__
-
-## Supporting this project!
-I originally created this project because I personally wanted something that was built to my (relatively high) expectations of performance and customizability. I share this project and its hosted service to the public as I thought that this would be something that would benefit others. However, __maintaining such a project__ and __handling the demands of all the users that would use this service__ would incur additional work and costs for myself. Hence, it would be **greatly** appreciated if you could support this project by the following ways:
-1. **Star ⭐ and share** this project!
-2. **Contribute** to the development. Refer to [Contributing](#Contributing)
-3. **Bug tracking!** If you find any issues, please create an Issue so the problem could be fixed as soon as possible.
-
-## Contributing
-If you are interested in helping make this project better, I highly welcome you to do so. I thank you in advance for your interest. If you are unsure of what you could do to improve the project, you may have a look in TODO list (above), or add to the list yourself
