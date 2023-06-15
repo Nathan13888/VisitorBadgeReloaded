@@ -53,42 +53,64 @@ Hence, something of **better performance** and **functionality** *must* be made!
 - Text: "Visitors"
 - Logo: *no logo*
 - Cache: *disabled*
+- Hit: *enabled*
+
+### Options
+
+To use the options, **append** these flags to the URL of the badge!
+
+| Option          | Flag        |Description |
+---               | ---         | ---
+| **Colour**      | `&color=<hex>` | Changes the colour of the embedded logo on the **right-side** of the badge. |
+| **Label Colour**| `&lcolor=<hex>` | Changes the colour of the embedded logo on the **left-side** of the badge. |
+| **Style**       | `&style=<style>` | Sets the badges style **based on Sheild.io's option**. |
+| **Text**        | `&text=<format>` | Allows a **custom string format** to be set. Replaces `CNT` with the view count. |
+| **Label**       | `label=<label>` | Replaces the label with a custom one. |
+| **Logo**        | `&logo=<logo name>` | Adds a logo to the badge (refer to examples). Find the logo name from [**Simple Icons**](https://simpleicons.org/) |
+| **Logo Colour** | `&lcolor=<hex>` | Changes the colour of the embedded logo on the **left-side** of the badge. |
+| **cache** (deprecated) | `cache=<anything here>` | **Disabled** by default. Changes the caching behaviour of the count by settina time out. This works *very* poorly with Github's Camo CDN if enabled (since Camo doesn't respect the expiry headers unless it's expired). If the flag `&cache=` is followed by any text (anything more than one character), caching is enabled. |
+| **hit**         | `&hit=off` | **Enabled** by default. Determines if the badge will update the count (useful for duplicated badges or badges for just viewing the count). If left *empty*, it will be update the count on each view. Any setting that is **non-empty, isn't `true` or `yes`**, is considered **disabled**. |
+
+> ***Coming soon***: Support for (all) options in shields.io badges
 
 ### Examples 🧪
+
+<!-- TODO: invisible badge option, cache?? logo, logo colour, custom text -->
+
 #### Different text background
 
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=590d22&style=for-the-badge&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=a4133c&style=for-the-badge&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=ff4d6d&style=for-the-badge&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=ffb3c1&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=590d22&style=for-the-badge&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=a4133c&style=for-the-badge&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=ff4d6d&style=for-the-badge&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&color=ffb3c1&style=for-the-badge&logo=Github&hit=false)
 
 #### Different label background
 
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=a4133c&color=555555&style=for-the-badge&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ff4d6d&color=555555&style=for-the-badge&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ffb3c1&color=555555&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=a4133c&color=555555&style=for-the-badge&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ff4d6d&color=555555&style=for-the-badge&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ffb3c1&color=555555&style=for-the-badge&logo=Github&hit=false)
 
 #### Different style
 
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=a4133c&color=555555&style=plastic&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ff4d6d&color=555555&style=flat&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ffb3c1&color=555555&style=flat-square&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=a4133c&color=555555&style=plastic&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ff4d6d&color=555555&style=flat&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=ffb3c1&color=555555&style=flat-square&logo=Github&hit=false)
 
 #### Different text
 
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Fans&lcolor=a4133c&color=555555&style=for-the-badge&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Lovers&lcolor=ff4d6d&color=555555&style=for-the-badge&logo=Github)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Workers&lcolor=ffb3c1&color=555555&style=for-the-badge&logo=Github)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Visitors&lcolor=590d22&color=555555&style=for-the-badge&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Fans&lcolor=a4133c&color=555555&style=for-the-badge&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Lovers&lcolor=ff4d6d&color=555555&style=for-the-badge&logo=Github&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&text=Workers&lcolor=ffb3c1&color=555555&style=for-the-badge&logo=Github&hit=false)
 
 #### Different logo
 
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=fff&color=000&style=for-the-badge&logo=Github&logoColor=181717)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=Canva&logoColor=00C4CC)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=4chan&logoColor=006600)
-![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=Snapchat&logoColor=FFFC00)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=fff&color=000&style=for-the-badge&logo=Github&logoColor=181717&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=Canva&logoColor=00C4CC&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=4chan&logoColor=006600&hit=false)
+![](https://vbr.wocr.tk/badge?page_id=visitor-badge-reloaded-visitors&lcolor=000&color=fff&style=for-the-badge&logo=Snapchat&logoColor=FFFC00&hit=false)
 
 ## 🚢 Migrating From Visitor Badge
 ```
