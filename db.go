@@ -69,10 +69,10 @@ func GetHash(hash string) string {
 	val, err := rdb.Get(ctx, hash).Result()
 
 	if err == redis.Nil { // key does not exist: initialize key
-		// TODO:
+		return "0"
 	} else if err != nil {
 		logError(err)
-		return ""
+		return "error"
 	}
 	return val
 }

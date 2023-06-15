@@ -136,13 +136,24 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	label := qryParam("text", r, text)
 	logo := qryParam("logo", r, logo)
 	logoColour := qryParam("logoColor", r, logoColour)
-	// TO DEPRECATED
+	hit := true
+	hit_qry := qryParam("hit", r, "")
+	if len(hit_qry) > 0 && (hit_qry != "true" && hit_qry != "yes") {
+		hit = false
+	}
+	// TODO: DEPRECATED
 	useCache := false
 	if len(qryParam("cache", r, "")) > 0 {
 		useCache = true
 	}
 
-	cnt := updateCounter(useCache, hash)
+	var cnt string
+	if hit {
+		cnt = updateCounter(useCache, hash)
+	} else {
+		cnt = GetHash(hash)
+	}
+
 	custom := qryParam("custom", r, "")
 	if len(custom) > 0 {
 		escaped, _ := url.QueryUnescape(custom)
@@ -161,6 +172,7 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 			Style:       style,
 			Logo:        logo,
 			LogoColour:  logoColour,
+			Hit:         hit,
 		})
 
 	date := time.Now().Add(time.Minute * -10).Format(http.TimeFormat)

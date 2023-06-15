@@ -18,6 +18,7 @@ type BadgeOptions struct {
 	Style       string
 	Logo        string
 	LogoColour  string
+	Hit         bool
 }
 
 func generateBadge(SHIELDS_URL string, options BadgeOptions) []byte {
@@ -48,6 +49,7 @@ func createBadge(SHIELDS_URL string, o BadgeOptions) ([]byte, error) {
 		Str("style", o.Style).
 		Str("logo", o.Logo).
 		Str("logo_colour", o.LogoColour).
+		Bool("hit", o.Hit).
 		Msg("Generating badge")
 
 	url := fmt.Sprintf("%s/badge/%s-%s-%s?labelColor=%s&style=%s&logo=%s&logoColor=%s",
