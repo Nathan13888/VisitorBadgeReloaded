@@ -1,5 +1,7 @@
 # Visitor Badge Reloaded ✨
 
+> 6/20/23: VBR will be down for several days (shouldn't happen again). Sorry for the inconvenience :/
+
 > 6/04/23: All cached records have been successfully restored!
 
 > 6/03/23: VBR will be **self-hosting Redis**. Since CountAPI seem to be somewhat semi-permanantly broken, many existing badges have lost their count. However I was able to recover over **300k lines of logs**, so I should be able to reconstruct a relatively accurate count of all the badges accesses within the **past 3 months**
