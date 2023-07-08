@@ -1,5 +1,7 @@
 # Visitor Badge Reloaded ✨
 
+> 6/20/23: VBR will be down for several days (shouldn't happen again). Sorry for the inconvenience :/
+
 > 6/04/23: All cached records have been successfully restored!
 
 > 6/03/23: VBR will be **self-hosting Redis**. Since CountAPI seem to be somewhat semi-permanantly broken, many existing badges have lost their count. However I was able to recover over **300k lines of logs**, so I should be able to reconstruct a relatively accurate count of all the badges accesses within the **past 3 months**
@@ -63,13 +65,13 @@ To use the options, **append** these flags to the URL of the badge!
 ---               | ---         | ---
 | **Colour**      | `&color=<hex>` | Changes the colour of the embedded logo on the **right-side** of the badge. |
 | **Label Colour**| `&lcolor=<hex>` | Changes the colour of the embedded logo on the **left-side** of the badge. |
-| **Style**       | `&style=<style>` | Sets the badges style **based on Sheild.io's option**. |
+| **Style**       | `&style=<style>` | Sets the badge style based on **Sheild.io's** option. |
 | **Text**        | `&text=<format>` | Allows a **custom string format** to be set. Replaces `CNT` with the view count. |
-| **Label**       | `label=<label>` | Replaces the label with a custom one. |
+| **Label**       | `&label=<label>` | Replaces the label with a custom one. |
 | **Logo**        | `&logo=<logo name>` | Adds a logo to the badge (refer to examples). Find the logo name from [**Simple Icons**](https://simpleicons.org/) |
 | **Logo Colour** | `&lcolor=<hex>` | Changes the colour of the embedded logo on the **left-side** of the badge. |
-| **cache** (deprecated) | `cache=<anything here>` | **Disabled** by default. Changes the caching behaviour of the count by settina time out. This works *very* poorly with Github's Camo CDN if enabled (since Camo doesn't respect the expiry headers unless it's expired). If the flag `&cache=` is followed by any text (anything more than one character), caching is enabled. |
-| **hit**         | `&hit=off` | **Enabled** by default. Determines if the badge will update the count (useful for duplicated badges or badges for just viewing the count). If left *empty*, it will be update the count on each view. Any setting that is **non-empty, isn't `true` or `yes`**, is considered **disabled**. |
+| **cache** (deprecated) | `&cache=<anything here>` | **Disabled** by default. Changes the caching behaviour of the count by setting a time out. This works *very* poorly with Github's Camo CDN if enabled (since Camo doesn't respect the expiry headers unless it's expired). If the flag `&cache=` is followed by any text (anything more than one character), caching is **enabled**. |
+| **hit**         | `&hit=off` | **Enabled** by default. Determines if the badge will update the count (useful for duplicated badges or badges for just viewing the count). If left *empty*, it will update the count on each view. Any setting that is **non-empty (isn't `true` or `yes`**) is considered **disabled**. |
 
 > ***Coming soon***: Support for (all) options in shields.io badges
 
