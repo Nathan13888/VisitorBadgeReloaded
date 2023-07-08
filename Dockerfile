@@ -23,15 +23,15 @@ ENV NODE_ENV production
 RUN apk add --no-cache tzdata nodejs bash
 RUN cp /usr/share/zoneinfo/America/Toronto /etc/localtime
 
-COPY --from=builder /build/bin/vbr /app/vbr
-COPY --from=builder /build/docker-wrapper.sh /app/docker-wrapper.sh
-
 ## Heroku Exec
 RUN apk add --no-cache curl openssh python3
 COPY --from=builder /build/heroku-exec.sh /app/.profile.d/heroku-exec.sh
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+# RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 COPY --from=shields /usr/src/app /app/shields
+
+COPY --from=builder /build/bin/vbr /app/vbr
+COPY --from=builder /build/docker-wrapper.sh /app/docker-wrapper.sh
 
 EXPOSE 8080/tcp
 EXPOSE 9090/tcp
