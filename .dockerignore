@@ -1,6 +1,16 @@
+.git/
+.github/
+
+
 *.md
-git/
+start.sh
+stop.sh
+
 data/
+deployments/
+docker-compose.yml
+redis_conf
+
 
 recovery/
 bin/

@@ -9,15 +9,15 @@ networks:
 
 services:
   vbr:
-    #image: docker.pkg.github.com/nathan13888/visitorbadgereloaded/vbr:latest
-    build: .
+    image: ghcr.io/nathan13888/vbr:latest
+    #build: .
     restart: unless-stopped
     container_name: vbr
     environment:
       - "DEBUG=enabled"
       - "KEY=guess_what"
-      # - "REDIS_URL=redis://vbr:vbr_verysecurepassword1234yes@redis:6379/0" # TODO: EDIT
-      - "REDIS_URL=redis://:@redis:6379/0"
+      - "REDIS_URL=redis://:@redis:6379/0" # TODO: using TiKV in the future
+      - "SHIELDS_URL=http://shields:9090" # don't have a trailing slash
       - "MAINTENANCE=enabled" # options: enabled, <anything else>
     ports:
       - "127.0.0.1:8080:8080"
@@ -35,6 +35,21 @@ services:
       - vbr
     depends_on:
       - redis
+      - shields
+
+  shields:
+    image: shieldsio/shields:server-2021-05-01
+    restart: unless-stopped
+    container_name: shields
+    environment:
+      - "NODE_ENV=production"
+      - "PORT=9090"
+    # ports:
+    #   - "127.0.0.1:9090:9090"
+    expose:
+      - 9090
+    networks:
+      - vbr
 
   redis:
     image: redis:7-alpine
