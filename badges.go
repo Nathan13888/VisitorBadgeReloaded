@@ -19,9 +19,12 @@ type BadgeOptions struct {
 	Logo        string
 	LogoColour  string
 	Hit         bool
+	// TODO: FallbackShields option (to use public shields instead)
 }
 
 func generateBadge(SHIELDS_URL string, options BadgeOptions) []byte {
+	// TODO: verify this mechanism
+	// TODO: auto undo fallback mechanism if triggered
 	if badgeErrorCount > 5 && badgeErrorCount < 10 {
 		SHIELDS_URL = DEFAULT_SHIELDS
 		log.Err(fmt.Errorf("experienced %d errors when generating badges", badgeErrorCount)).Msg("reseting SHIELDS_URL")

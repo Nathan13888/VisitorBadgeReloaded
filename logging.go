@@ -33,6 +33,7 @@ func configureLogger(debug bool) {
 }
 
 func logError(err error) {
+	badgeErrorCount++
 	logErrorMsg(err, "")
 }
 

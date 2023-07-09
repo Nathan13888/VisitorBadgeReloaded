@@ -27,8 +27,8 @@ const (
 	DEFAULT_SHIELDS = "https://img.shields.io"
 )
 
-var SHIELDS_URL = DEFAULT_SHIELDS
-var badgeErrorCount = 0
+var SHIELDS_URL = GetENV("SHIELDS_URL", DEFAULT_SHIELDS)
+var badgeErrorCount = 0 // TODO: verify there isn't a race condition on this
 
 var port = GetENV("PORT", "8080")
 var key = GetENV("KEY", "guess_what")
@@ -47,10 +47,6 @@ func main() {
 	if strings.EqualFold(GetENV("MAINTENANCE", ""), "enabled") {
 		maintenance = true
 		log.Info().Msg("Enabled Maintenance Mode.")
-	}
-
-	if strings.EqualFold(GetENV("LOCAL_SHIELDS", ""), "enabled") {
-		SHIELDS_URL = "http://localhost:9090"
 	}
 
 	// configure logging
@@ -78,6 +74,9 @@ func main() {
 	r.HandleFunc("/status", getStatus).Methods("GET")
 	r.HandleFunc("/badge", getBadge).Methods("GET")
 	// TODO: add auth middleware
+	r.HandleFunc("/health", getHealth).Methods("GET")
+	r.HandleFunc("/healthz", getHealth).Methods("GET")
+
 	if maintenance {
 		r.HandleFunc("/rec", getRec).Methods("GET")
 	}
@@ -190,6 +189,11 @@ func getBadge(w http.ResponseWriter, r *http.Request) {
 	w.Write(badge)
 
 	log.Info().Str("page", page).Str("views", cnt).Msg("Generated badge")
+}
+
+func getHealth(w http.ResponseWriter, r *http.Request) {
+	// TODO: do health checks with redis and shields.io
+	return
 }
 
 func getRec(w http.ResponseWriter, r *http.Request) {
