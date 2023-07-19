@@ -1,11 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 
 	"github.com/rs/zerolog/log"
 )
@@ -103,36 +101,9 @@ func getErrorBadge() []byte {
 }
 
 func updateCounter(useCache bool, hash string) string {
-	if !useCache {
-		// return updateCountAPI(hash)
-		return updateRedis(hash)
-	}
-	// look up cache
-	return updateCachedCount(hash) // note that this will return the CountAPI count if hash does not exist
+	return updateRedis(hash)
 }
 
 func updateRedis(hash string) string {
 	return QueryHash(hash)
-}
-
-// DEPRECATED:
-func updateCountAPI(hash string) string {
-	url := "https://api.countapi.xyz/hit/visitor-badge/" + hash
-	res, err := http.Get(url)
-	// TODO: fix header content check
-	// cont := res.Header.Get("Content-Type")
-	// if cont != "application/json" {
-	// 	log.Fatal("Did not receive expected JSON response. Received: " + cont)
-	// }
-	if err != nil {
-		logError(err)
-	}
-	defer res.Body.Close()
-
-	var obj CountAPIResponse
-	decoder := json.NewDecoder(res.Body)
-	decoder.DisallowUnknownFields()
-	decoder.Decode(&obj)
-
-	return strconv.Itoa(obj.Value)
 }

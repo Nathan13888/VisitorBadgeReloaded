@@ -84,7 +84,6 @@ func main() {
 	r.Use(loggingMiddleware)
 
 	log.Info().Msg("Configuring cache")
-	initCache()
 	startTime = time.Now()
 
 	// Run our server in a goroutine so that it doesn't block.
@@ -226,7 +225,6 @@ func getPing(w http.ResponseWriter, r *http.Request) {
 func getStatus(w http.ResponseWriter, r *http.Request) {
 	// TODO: include redis
 	res := StatusResponse{
-		CachedHashes:      cache.Len(),
 		ProcessedRequests: processedBadges,
 		Uptime:            int64(time.Since(startTime).Seconds()),
 		CodeRepository:    "https://github.com/Nathan13888/VisitorBadgeReloaded",
