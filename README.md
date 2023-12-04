@@ -1,4 +1,5 @@
 # Visitor Badge Reloaded ✨
+> 12/03/23: NOTICE - there sill be scheduled downtime between Dec 5th evening and Dec 7 morning due to server room maintainance ;)
 
 > 6/20/23: VBR will be down for several days (shouldn't happen again). Sorry for the inconvenience :/
 
