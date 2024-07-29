@@ -229,6 +229,7 @@ func getStatus(w http.ResponseWriter, r *http.Request) {
 		Uptime:            int64(time.Since(startTime).Seconds()),
 		CodeRepository:    "https://github.com/Nathan13888/VisitorBadgeReloaded",
 		RedisStatus:       "TBI",
+		Version:           BuildVersion,
 		// TODO: more redis fields
 	}
 

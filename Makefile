@@ -16,7 +16,6 @@ docker-build:
 	# TODO: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
 
 	docker tag vbr:latest ghcr.io/nathan13888/vbr:latest
-	docker push ghcr.io/nathan13888/vbr:latest
 
 docker-run:
 	docker run -it --rm -p 80:8080 -p 443:8081 -p 9090:9090 vbr
@@ -29,9 +28,10 @@ publish:
 	make publish-ghcr
 
 publish-ghcr:
-	docker tag ghcr.io/nathan13888/vbr:latest ghcr.io/nathan13888/vbr:1.1
+	docker push ghcr.io/nathan13888/vbr:latest
+	docker tag ghcr.io/nathan13888/vbr:latest ghcr.io/nathan13888/vbr:1.2
 	# TODO: use latest git tag as tag ^^
-	docker push ghcr.io/nathan13888/vbr:1.1
+	docker push ghcr.io/nathan13888/vbr:1.2
 
 
 clean:

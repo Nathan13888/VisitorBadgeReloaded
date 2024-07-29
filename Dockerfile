@@ -3,6 +3,8 @@ FROM golang:1.18-alpine as builder
 WORKDIR /build
 COPY . .
 RUN apk add make
+
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 RUN make build
 
 # IMAGE: CONTAINER
