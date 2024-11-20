@@ -1,12 +1,14 @@
 {
-	"name": "vbr",
-	"version": "0.0.0",
-	"private": true,
-	"scripts": {
-		"deploy": "wrangler deploy",
-		"dev": "wrangler dev --local"
-	},
-	"devDependencies": {
-		"wrangler": "^3.88.0"
-	}
+  "name": "vbr",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify"
+  },
+  "dependencies": {
+    "hono": "^4.6.11"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241022.0",
+    "wrangler": "^3.83.0"
+  }
 }
