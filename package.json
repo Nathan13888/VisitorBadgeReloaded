@@ -2,13 +2,15 @@
   "name": "vbr",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify"
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
     "hono": "^4.6.11"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@cloudflare/workers-types": "^4.20241022.0",
-    "wrangler": "^3.83.0"
+    "wrangler": "4"
   }
 }
