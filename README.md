@@ -1,5 +1,7 @@
 # Visitor Badge Reloaded ✨
 
+> 06/16/25: Migrated to Cloudflare Workers
+
 > 11/20/24: Refactoring to ~~Rust 🦀...~~Typescript
 
 > 02/06/24: DEPRECATED vbr.wocr.tk (Freenom killed the domain... I renewed half a year ago btw). Please use the new domain name!
@@ -45,7 +47,7 @@ Hence, something of **better performance** and **functionality** _must_ be made!
 
 |                            | VBR                                                                                       | Visitor-Badge               |
 | -------------------------- | ----------------------------------------------------------------------------------------- | --------------------------- |
-| **Programming Language**   | Rust (Prev. Golang)                                                                       | Python                      |
+| **Programming Language**   | Typescript on Isolates (Prev. Golang)                                                     | Python                      |
 | **Performance**            | Everything is self-contained (api, badges, kv)                                            | Python + ... 🤔             |
 | **Features**               | Many badges to customize. Basically all things customizable through Shields.io.           | One size fits all approach. |
 | **Potential downtime?**    | Lol sus...                                                                                | Vercel app sleeps?!? 😢     |
@@ -156,26 +158,19 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
 ## 🚀 Feature Roadmap
 
 - Deployment
-  - [ ] ~~K8S support (Helm charts)~~
   - [x] High availability (stateless)
   - [x] Upgraded Shields.io
   - [ ] Automated scheduled backups: badge counts
 - API Improvements
   - [x] Rate limiting, Prevent Abuse
-  - [ ] /health, /healthz endpoints
-  - [ ] Improved /status information.
+  - [x] /healthz endpoints
   - [ ] Uptime Monitoring
 - Code base
   - [x] Refactor code base
-  - [ ] Complete TODO comments
   - [x] Deprecate "Bigcache"
+  - [x] V2 rewrite
 - New Website
-
-  - [
-
-  ] Personalized Analytics About Visitors
-
-  - [ ] Automated import from other projects
+  - [ ] Personalized Analytics About Visitors
 
 ## 🥳 Supporting this project!
 
@@ -195,22 +190,21 @@ This app could be packaged as a Docker image. Prebuilt docker images of VBR are 
 
 ### ... (V2)
 
-TBD...
+```bash
+# 1. install dependencies
+bun i
 
-### Heroku (Deprecated)
+# 2. use own workers kv
+# update `wrangler.toml` with your own kv namespace id (avoid changing binding name to avoid regenerating types)
+# @see https://developers.cloudflare.com/kv/get-started/
 
-> NOTE: Untested for new versions of Heroku dynos. But feel free to submit a PR or issue/request if something doesn't work.
-> Please note that Heroku will no longer offer free dynos starting November 28, 2022!
-
-Documentation for deploying Docker is found [here](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml). **All the files necessary to deploy to Heroku is already present** within the repository so this should be rather trivial. In addition `make deploy-heroku` pushes the git repo to the `heroku` remote if you have configured Heroku already.
-
-You could also deploy to heroku using this widget (thanks to [rzlamrr](https://github.com/rzlamrr) for the PR):
-
-[![Deploy (Deprecated)](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+# 3. deploy to cloudflare
+bun run deploy
+```
 
 ## 💻 Software Used
 
-#### V1
+### V1
 
 - Golang
 - Docker
@@ -219,6 +213,9 @@ You could also deploy to heroku using this widget (thanks to [rzlamrr](https://g
 - Redis (Cache and Database)
 - shields.io
 
-#### V2
+### V2
 
-TBD...
+- Cloudflare Workers
+- Typescript
+- Hono
+- shields.io
