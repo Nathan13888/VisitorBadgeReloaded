@@ -1,11 +1,34 @@
 import { Hono } from "hono";
 import { type BadgeOptions, createBadge } from "./badge";
 import { page_id_fetch, page_id_fetch_add_one } from "./kv";
+import LandingPage from "./pages/landing";
+import type { FC } from "hono/jsx";
+import { tailwind } from "hono-tailwind";
+import InfoPage from "./pages/info";
 
 const app = new Hono<{ Bindings: Env }>();
 
+const Layout: FC = (props) => {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Visitor Badge Reloaded</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" />
+      </head>
+      <body>{props.children}</body>
+    </html>
+  );
+};
+
 app.get("/", (c) => {
-  return c.redirect("https://github.com/Nathan13888/VisitorBadgeReloaded", 307);
+  return c.html(
+    <Layout>
+      <LandingPage />
+    </Layout>,
+  );
 });
 
 app.get("/healthz", (c) => {
