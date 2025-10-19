@@ -27,6 +27,15 @@ head_sampling_rate = 1
 binding = "vbr_badge_counts"
 id = "6a63980cfdb6493ca4bb8e8817060543"
 
+[[durable_objects.bindings]]
+name = "BADGE_STORE"
+class_name = "BadgeDO"
+script_name = "vbr"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["BadgeDO"]
+
 # TODO: cron backup job
 
 # [[r2_buckets]]

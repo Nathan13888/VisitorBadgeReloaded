@@ -1,10 +1,12 @@
 import { Hono } from "hono";
 import { type BadgeOptions, createBadge } from "./badge";
-import { page_id_fetch, page_id_fetch_add_one } from "./kv";
+import { page_id_fetch, page_id_fetch_add_one, page_id_get_analytics, page_id_exists } from "./page";
 import LandingPage from "./pages/landing";
 import type { FC } from "hono/jsx";
-import { tailwind } from "hono-tailwind";
 import InfoPage from "./pages/info";
+import { BadgeDO } from "./do";
+
+export { BadgeDO };
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -31,8 +33,46 @@ app.get("/", (c) => {
   );
 });
 
+app.get("/info/:id", async (c) => {
+  const { id } = c.req.param();
+
+  const analytics = c.env.BADGE_STORE;
+  const summary = await page_id_get_analytics(analytics, id);
+
+  return c.html(
+    <Layout>
+      <InfoPage id={id} analytics={summary} />
+    </Layout>,
+  );
+});
+
 app.get("/healthz", (c) => {
   return c.json({ status: "ok" });
+});
+
+// Analytics API endpoint
+app.get("/api/analytics/:pageId", async (c) => {
+  const { pageId } = c.req.param();
+  
+  if (!pageId) {
+    return c.json({ error: "page_id is required" }, 400);
+  }
+
+  const analytics = c.env.BADGE_STORE;
+  
+  // Check if badge exists first
+  const exists = await page_id_exists(analytics, pageId);
+  if (!exists) {
+    return c.json({ error: "Badge not found" }, 404);
+  }
+
+  // Get analytics summary
+  const summary = await page_id_get_analytics(analytics, pageId);
+  if (!summary) {
+    return c.json({ error: "No analytics data available" }, 404);
+  }
+
+  return c.json(summary);
 });
 
 app.get("/badge", async (c) => {
@@ -65,11 +105,11 @@ app.get("/badge", async (c) => {
   c.header("Date", date);
   c.header("Expires", expiry);
 
-  // get count
-  const kv = c.env.vbr_badge_counts;
+  // get count using Durable Object analytics
+  const analytics = c.env.BADGE_STORE;
   let text = await (hit
-    ? page_id_fetch_add_one(kv, pageId)
-    : page_id_fetch(kv, pageId));
+    ? page_id_fetch_add_one(analytics, pageId, c.req.raw)
+    : page_id_fetch(analytics, pageId));
 
   // check for custom formatting
   const custom_template = c.req.query("custom");
