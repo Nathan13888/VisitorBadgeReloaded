@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VBR Benchmark Report - 10/19/2025, 3:30:56 PM</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .meta-item {
+            text-align: center;
+        }
+        
+        .meta-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .meta-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .charts {
+            padding: 2rem;
+        }
+        
+        .chart-container {
+            margin-bottom: 3rem;
+        }
+        
+        .chart-container h2 {
+            margin-bottom: 1rem;
+            color: #495057;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .results-table {
+            padding: 2rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .success {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .warning {
+            color: #ffc107;
+            font-weight: 600;
+        }
+        
+        .danger {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+            border-top: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Visitor Badge Reloaded</h1>
+            <p>Benchmark Report</p>
+        </div>
+        
+        <div class="meta">
+            <div class="meta-item">
+                <div class="meta-label">Base URL</div>
+                <div class="meta-value" style="font-size: 1rem;">https://vbr.nathanchung.dev</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Timestamp</div>
+                <div class="meta-value" style="font-size: 1rem;">10/19/2025, 3:30:56 PM</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Total Tests</div>
+                <div class="meta-value">10</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Total Requests</div>
+                <div class="meta-value">1350</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Success Rate</div>
+                <div class="meta-value">100.00%</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Avg P95</div>
+                <div class="meta-value">1149.92ms</div>
+            </div>
+        </div>
+        
+        <div class="charts">
+            <div class="chart-container">
+                <h2>📊 Response Time Distribution</h2>
+                <div class="chart-wrapper">
+                    <canvas id="responseTimeChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h2>⚡ Throughput Comparison</h2>
+                <div class="chart-wrapper">
+                    <canvas id="throughputChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h2>❌ Error Rates</h2>
+                <div class="chart-wrapper">
+                    <canvas id="errorChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results-table">
+            <h2 style="margin-bottom: 1rem; color: #495057;">📈 Detailed Results</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Test Name</th>
+                        <th>Requests</th>
+                        <th>Success Rate</th>
+                        <th>Avg Response</th>
+                        <th>P95</th>
+                        <th>P99</th>
+                        <th>Throughput</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><strong>Health Check</strong></td>
+                            <td>100</td>
+                            <td class="success">100.00%</td>
+                            <td>73.21ms</td>
+                            <td>137.28ms</td>
+                            <td>1084.86ms</td>
+                            <td>70.41 req/s</td>
+                            <td><span class="badge badge-success">Excellent</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>Badge - Sequential Requests</strong></td>
+                            <td>50</td>
+                            <td class="success">100.00%</td>
+                            <td>53.13ms</td>
+                            <td>76.75ms</td>
+                            <td>253.03ms</td>
+                            <td>15.75 req/s</td>
+                            <td><span class="badge badge-success">Excellent</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>Badge - With Hit Counting</strong></td>
+                            <td>100</td>
+                            <td class="success">100.00%</td>
+                            <td>205.76ms</td>
+                            <td>233.94ms</td>
+                            <td>563.20ms</td>
+                            <td>20.99 req/s</td>
+                            <td><span class="badge badge-warning">Good</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>Badge - Read-Only (No Hits)</strong></td>
+                            <td>100</td>
+                            <td class="success">100.00%</td>
+                            <td>59.65ms</td>
+                            <td>98.79ms</td>
+                            <td>208.14ms</td>
+                            <td>59.84 req/s</td>
+                            <td><span class="badge badge-success">Excellent</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>Badge - Low Concurrency</strong></td>
+                            <td>100</td>
+                            <td class="success">100.00%</td>
+                            <td>71.73ms</td>
+                            <td>264.17ms</td>
+                            <td>272.44ms</td>
+                            <td>87.99 req/s</td>
+                            <td><span class="badge badge-warning">Good</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>Badge - High Concurrency</strong></td>
+                            <td>200</td>
+                            <td class="success">100.00%</td>
+                            <td>918.29ms</td>
+                            <td>5121.83ms</td>
+                            <td>11090.42ms</td>
+                            <td>17.04 req/s</td>
+                            <td><span class="badge badge-danger">Slow</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>Badge - Customized Styling</strong></td>
+                            <td>100</td>
+                            <td class="success">100.00%</td>
+                            <td>74.43ms</td>
+                            <td>258.76ms</td>
+                            <td>263.12ms</td>
+                            <td>97.39 req/s</td>
+                            <td><span class="badge badge-warning">Good</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>Analytics API</strong></td>
+                            <td>50</td>
+                            <td class="success">100.00%</td>
+                            <td>79.96ms</td>
+                            <td>140.41ms</td>
+                            <td>272.62ms</td>
+                            <td>69.08 req/s</td>
+                            <td><span class="badge badge-success">Excellent</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>Landing Page</strong></td>
+                            <td>50</td>
+                            <td class="success">100.00%</td>
+                            <td>22.10ms</td>
+                            <td>32.69ms</td>
+                            <td>49.65ms</td>
+                            <td>231.59 req/s</td>
+                            <td><span class="badge badge-success">Excellent</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>Stress Test - Burst Traffic</strong></td>
+                            <td>500</td>
+                            <td class="success">100.00%</td>
+                            <td>1236.31ms</td>
+                            <td>5134.62ms</td>
+                            <td>19083.69ms</td>
+                            <td>9.89 req/s</td>
+                            <td><span class="badge badge-danger">Slow</span></td>
+                        </tr>
+                        
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="footer">
+            <p>Generated by VBR Benchmark Suite • 10/19/2025, 3:33:58 PM</p>
+        </div>
+    </div>
+    
+    <script>
+        const chartData = [{"name":"Health Check","avg":73.20590465000001,"p95":137.278334,"p99":1084.856209},{"name":"Badge - Sequential Requests","avg":53.13301171999998,"p95":76.75212499999998,"p99":253.0272500000001},{"name":"Badge - With Hit Counting","avg":205.75537207000008,"p95":233.9391660000001,"p99":563.2038330000005},{"name":"Badge - Read-Only (No Hits)","avg":59.652426279999816,"p95":98.79170800000065,"p99":208.13512499999888},{"name":"Badge - Low Concurrency","avg":71.73352459999998,"p95":264.1658750000006,"p99":272.44216700000106},{"name":"Badge - High Concurrency","avg":918.2885249949996,"p95":5121.830166999998,"p99":11090.4235},{"name":"Badge - Customized Styling","avg":74.43159834000012,"p95":258.76445800000147,"p99":263.12491599999703},{"name":"Analytics API","avg":79.95719331999979,"p95":140.40683300000092,"p99":272.6239579999965},{"name":"Landing Page","avg":22.09983832000049,"p95":32.68712500000038,"p99":49.650291999998444},{"name":"Stress Test - Burst Traffic","avg":1236.3142804159988,"p95":5134.624750000003,"p99":19083.693125}];
+        
+        // Response Time Chart
+        new Chart(document.getElementById('responseTimeChart'), {
+            type: 'bar',
+            data: {
+                labels: chartData.map(d => d.name),
+                datasets: [
+                    {
+                        label: 'Average',
+                        data: chartData.map(d => d.avg),
+                        backgroundColor: 'rgba(102, 126, 234, 0.5)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'P95',
+                        data: chartData.map(d => d.p95),
+                        backgroundColor: 'rgba(118, 75, 162, 0.5)',
+                        borderColor: 'rgba(118, 75, 162, 1)',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'P99',
+                        data: chartData.map(d => d.p99),
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Response Time (ms)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Throughput Chart
+        new Chart(document.getElementById('throughputChart'), {
+            type: 'bar',
+            data: {
+                labels: ["Health Check","Badge - Sequential Requests","Badge - With Hit Counting","Badge - Read-Only (No Hits)","Badge - Low Concurrency","Badge - High Concurrency","Badge - Customized Styling","Analytics API","Landing Page","Stress Test - Burst Traffic"],
+                datasets: [{
+                    label: 'Requests per Second',
+                    data: [70.41438216797683,15.747049683634245,20.988982855193846,59.83714871199416,87.98916704124092,17.04409525367929,97.39090581407682,69.08102948882907,231.59339148257297,9.88807614918189],
+                    backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Requests per Second'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Error Rate Chart
+        new Chart(document.getElementById('errorChart'), {
+            type: 'bar',
+            data: {
+                labels: ["Health Check","Badge - Sequential Requests","Badge - With Hit Counting","Badge - Read-Only (No Hits)","Badge - Low Concurrency","Badge - High Concurrency","Badge - Customized Styling","Analytics API","Landing Page","Stress Test - Burst Traffic"],
+                datasets: [{
+                    label: 'Error Rate (%)',
+                    data: [0,0,0,0,0,0,0,0,0,0],
+                    backgroundColor: 'rgba(220, 53, 69, 0.5)',
+                    borderColor: 'rgba(220, 53, 69, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Error Rate (%)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

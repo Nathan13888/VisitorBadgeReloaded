@@ -1,6 +1,8 @@
 # Visitor Badge Reloaded ✨
 
-> 10/19/25: New website at https://vbr.nathanchung.dev
+> 10/19/25: Migrated from Cloudflare KV to DO for storage backend
+
+> 10/19/25: New website at <https://vbr.nathanchung.dev>
 
 > 06/16/25: Migrated to Cloudflare Workers
 
@@ -43,25 +45,52 @@ Hence, something of **better performance** and **functionality** _must_ be made!
 
 ---
 
-<!-- TODO: update comparison -->
-
-## 📊 VBR vs [Visitor-Badge](https://github.com/jwenjian/visitor-badge)
-
-|                            | VBR                                                                                       | Visitor-Badge               |
-| -------------------------- | ----------------------------------------------------------------------------------------- | --------------------------- |
-| **Programming Language**   | Typescript on Isolates (Prev. Golang)                                                     | Python                      |
-| **Performance**            | Everything is self-contained (api, badges, kv)                                            | Python + ... 🤔             |
-| **Features**               | Many badges to customize. Basically all things customizable through Shields.io.           | One size fits all approach. |
-| **Potential downtime?**    | Lol sus...                                                                                | Vercel app sleeps?!? 😢     |
-| **Self hosting friendly?** | What'd you think...                                                                       | No instructions in README.  |
-| **Development?**           | Semi-frequent updates and refreshes. PRs and issues are regularly reviewed and addressed. | (Unmaintained?)             |
-
-- **direct replacement** (refer to [Migrating From Visitor Badge](#migrating-from-visitor-badge))
-- (almost) fully customizable badge
-
 ## 🏎️ Benchmarks
 
-_coming soon..._ (At some point I promise...)
+A comprehensive benchmark suite is available to test the publicly hosted service! See [benchmark/README.md](benchmark/README.md) for details.
+
+**Results:**
+
+![alt text](benchmark/latency_chart.png)
+
+| Test Name | Requests | Success Rate | Avg Response | P95 | P99 | Throughput |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Health Check** | 100 | 100.00% | 73.21ms | 137.28ms | 1084.86ms | 70.41 req/s |
+| **Badge - Sequential Requests** | 50 | 100.00% | 53.13ms | 76.75ms | 253.03ms | 15.75 req/s |
+| **Badge - With Hit Counting** | 100 | 100.00% | 205.76ms | 233.94ms | 563.20ms | 20.99 req/s |
+| **Badge - Read-Only (No Hits)** | 100 | 100.00% | 59.65ms | 98.79ms | 208.14ms | 59.84 req/s |
+| **Badge - Low Concurrency** | 100 | 100.00% | 71.73ms | 264.17ms | 272.44ms | 87.99 req/s |
+| **Badge - High Concurrency** | 200 | 100.00% | 918.29ms | 5121.83ms | 11090.42ms | 17.04 req/s |
+| **Badge - Customized Styling** | 100 | 100.00% | 74.43ms | 258.76ms | 263.12ms | 97.39 req/s |
+| **Analytics API** | 50 | 100.00% | 79.96ms | 140.41ms | 272.62ms | 69.08 req/s |
+| **Landing Page** | 50 | 100.00% | 22.10ms | 32.69ms | 49.65ms | 231.59 req/s |
+| **Stress Test - Burst Traffic** | 500 | 100.00% | 1236.31ms | 5134.62ms | 19083.69ms | 9.89 req/s |
+
+Performed on 2025-10-19 using a Macbook (M4 Pro) with a ~12.6ms average network latency to Cloudflare.
+
+**Quick Start:**
+
+```bash
+# Run a quick performance check (~30 seconds)
+bun run benchmark/quick-bench.ts
+
+# Run the full benchmark suite (~5 minutes)
+bun run bench
+
+# Generate visual HTML report
+bun run bench:report
+```
+
+**What's tested:**
+
+- Response time (avg, p50, p95, p99)
+- Throughput (requests per second)
+- Cache effectiveness
+- Concurrent request handling
+- Error rates and reliability
+- Real-world usage patterns
+
+Results are saved to `benchmark/results/` and can be compared over time to track performance trends.
 
 ## ⚙️ Settings
 
@@ -80,7 +109,6 @@ To use the options, **append** these flags to the URL of the badge!
 | **Logo Colour**        | `&lcolor=<hex>`          | Changes the colour of the embedded logo on the **left-side** of the badge.                                                                                                                                                                                                                                                           |
 | **cache** (deprecated) | `&cache=<anything here>` | **Disabled** by default. Changes the caching behaviour of the count by setting a time out. This works _very_ poorly with Github's Camo CDN if enabled (since Camo doesn't respect the expiry headers unless it's expired). If the flag `&cache=` is followed by any text (anything more than one character), caching is **enabled**. |
 | **hit**                | `&hit=off`               | **Enabled** by default. Determines if the badge will update the count (useful for duplicated badges or badges for just viewing the count). If left _empty_, it will update the count on each view. Any setting that is **non-empty (isn't `true` or `yes`**) is considered **disabled**.                                             |
-
 
 **Defaults**:
 
@@ -152,7 +180,7 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
 - `lcolor=<colour here>` --> the hex colour of the label background, **do NOT include the `#`**
 - `style=<style name>` --> refer to the Sheilds.IO website for the available options
 - `text=<Some text other than "Visitors">` --> put a customizable label on your badge
-- `logo` --> logo to put beside the badge, go to https://simpleicons.org/ for the available names
+- `logo` --> logo to put beside the badge, go to <https://simpleicons.org/> for the available names
 - `logoColor` --> refer to `color` for the formatting
 - `cache` --> \*just put `&cache=on` at the end of the badge url
 
@@ -169,7 +197,7 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
 - New Website
   - [ ] Personalized Analytics About Visitors
 
-## 🥳 Supporting this project!
+## 🥳 Supporting this project
 
 I originally created this project because I personally wanted something that was built to my (relatively high) expectations of performance and customizability. I share this project and its hosted service to the public as I thought that this would be something that would benefit others. However, **maintaining such a project** and **handling the demands of all the users that would use this service** would incur additional work and costs for myself. Hence, it would be **greatly** appreciated if you could support this project by the following ways:
 
