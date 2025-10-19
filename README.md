@@ -1,5 +1,7 @@
 # Visitor Badge Reloaded ✨
 
+> 10/19/25: New website at https://vbr.nathanchung.dev
+
 > 06/16/25: Migrated to Cloudflare Workers
 
 > 11/20/24: Refactoring to ~~Rust 🦀...~~Typescript
@@ -61,18 +63,9 @@ Hence, something of **better performance** and **functionality** _must_ be made!
 
 _coming soon..._ (At some point I promise...)
 
-## ⚙️ Settings/Configuration
+## ⚙️ Settings
 
-### Defaults
-
-- Colour: "blue"
-- Style: "square"
-- Text: "Visitors"
-- Logo: _no logo_
-- Cache: _disabled_
-- Hit: _enabled_
-
-### Options (NEW Section)
+### Badge Options
 
 To use the options, **append** these flags to the URL of the badge!
 
@@ -88,7 +81,15 @@ To use the options, **append** these flags to the URL of the badge!
 | **cache** (deprecated) | `&cache=<anything here>` | **Disabled** by default. Changes the caching behaviour of the count by setting a time out. This works _very_ poorly with Github's Camo CDN if enabled (since Camo doesn't respect the expiry headers unless it's expired). If the flag `&cache=` is followed by any text (anything more than one character), caching is **enabled**. |
 | **hit**                | `&hit=off`               | **Enabled** by default. Determines if the badge will update the count (useful for duplicated badges or badges for just viewing the count). If left _empty_, it will update the count on each view. Any setting that is **non-empty (isn't `true` or `yes`**) is considered **disabled**.                                             |
 
-> **_Coming soon_**: Support for (all) options in shields.io badges
+
+**Defaults**:
+
+- Colour: "blue"
+- Style: "square"
+- Text: "Visitors"
+- Logo: _no logo_
+- Cache: _disabled_
+- Hit: _enabled_
 
 ### Examples 🧪
 
@@ -165,10 +166,6 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
   - [x] Rate limiting, Prevent Abuse
   - [x] /healthz endpoints
   - [ ] Uptime Monitoring
-- Code base
-  - [x] Refactor code base
-  - [x] Deprecate "Bigcache"
-  - [x] V2 rewrite
 - New Website
   - [ ] Personalized Analytics About Visitors
 
@@ -188,7 +185,7 @@ Please sauce PRs if there are problems ;)
 
 This app could be packaged as a Docker image. Prebuilt docker images of VBR are also available on Docker Hub and on the Github Container Registry. **Just run the relevant commands found in the [**Makefile**](Makefile)**. Then deploy to your choosen cloud service or even to your own server. However, note that there is no HTTPS support and VBR should be placed behind something else that provides HTTPS (eg. reverse proxy, Heroku...).
 
-### ... (V2)
+### Cloudflare (V2)
 
 ```bash
 # 1. install dependencies
@@ -204,6 +201,13 @@ bun run deploy
 
 ## 💻 Software Used
 
+### V2
+
+- Cloudflare Workers
+- Typescript
+- Hono
+- shields.io
+
 ### V1
 
 - Golang
@@ -211,11 +215,4 @@ bun run deploy
 - Mux (router)
 - Zerolog (logger)
 - Redis (Cache and Database)
-- shields.io
-
-### V2
-
-- Cloudflare Workers
-- Typescript
-- Hono
 - shields.io
