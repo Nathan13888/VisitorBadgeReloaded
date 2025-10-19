@@ -1,0 +1,8 @@
+# Benchmark results directory
+# Results are generated locally and can be large
+
+*.json
+!.gitkeep
+
+# Keep the directory structure
+!README.md
