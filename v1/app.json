@@ -1,12 +1,7 @@
 {
   "name": "Visitor Badge Reloaded",
   "description": "A Visitor Badge made with Golang that prioritizes performance and customizability.",
-  "keywords": [
-    "visitor-badge-reloaded",
-    "golang",
-    "docker",
-    "shields"
-  ],
+  "keywords": ["visitor-badge-reloaded", "golang", "docker", "shields"],
   "repository": "https://github.com/Nathan13888/VisitorBadgeReloaded",
   "website": "https://github.com/Nathan13888/VisitorBadgeReloaded#readme",
   "stack": "container",

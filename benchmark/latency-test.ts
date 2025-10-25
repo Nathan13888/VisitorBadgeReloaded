@@ -46,7 +46,7 @@ async function measureDetailedTiming(url: string): Promise<LatencyResult> {
 
 async function testEndpointLatency(
   endpoint: string,
-  samples: number = 10,
+  samples = 10,
 ): Promise<number[]> {
   const times: number[] = [];
 

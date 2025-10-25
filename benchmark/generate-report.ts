@@ -3,7 +3,7 @@
  * Creates a visual HTML report from benchmark results
  */
 
-import { readdir, readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 interface BenchmarkResult {

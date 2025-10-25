@@ -28,7 +28,8 @@ export default function InfoPage(props: {
           </h1>
           <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <p class="text-yellow-800 dark:text-yellow-200">
-              No analytics data available for this badge yet. The badge may not exist or hasn't received any hits.
+              No analytics data available for this badge yet. The badge may not
+              exist or hasn't received any hits.
             </p>
           </div>
         </div>
@@ -43,14 +44,20 @@ export default function InfoPage(props: {
       <div class="max-w-6xl mx-auto">
         {/* Header */}
         <div class="mb-8">
-          <a href="/" class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mb-4 inline-block">
+          <a
+            href="/"
+            class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mb-4 inline-block"
+          >
             ← Back to Home
           </a>
           <h1 class="text-4xl font-bold text-slate-900 dark:text-white mb-2">
             Badge Analytics
           </h1>
           <p class="text-slate-600 dark:text-slate-300">
-            This page has analytics for page: <code class="bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded">{props.id}</code>
+            This page has analytics for page:{" "}
+            <code class="bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded">
+              {props.id}
+            </code>
           </p>
         </div>
 
@@ -64,7 +71,7 @@ export default function InfoPage(props: {
               {stats.totalHits.toLocaleString()}
             </div>
           </div>
-          
+
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
             <div class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
               Unique Visitors
@@ -73,7 +80,7 @@ export default function InfoPage(props: {
               {stats.uniqueVisitors.toLocaleString()}
             </div>
           </div>
-          
+
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
             <div class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
               Last 24 Hours
@@ -82,7 +89,7 @@ export default function InfoPage(props: {
               {stats.hitsLast24Hours.toLocaleString()}
             </div>
           </div>
-          
+
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
             <div class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
               Last 7 Days
@@ -99,14 +106,15 @@ export default function InfoPage(props: {
             <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-6">
               Daily Traffic (Last 14 Days)
             </h2>
-            <div style={{ height: '300px' }}>
+            <div style={{ height: "300px" }}>
               <canvas id="trafficChart" />
             </div>
             {/* Load Chart.js from CDN */}
             <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" />
             {/* biome-ignore lint/security/noDangerouslySetInnerHtml: Chart.js initialization */}
-            <script dangerouslySetInnerHTML={{
-              __html: `
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
                 (function() {
                   // Wait for Chart.js to load
                   if (typeof Chart === 'undefined') {
@@ -124,10 +132,10 @@ export default function InfoPage(props: {
                     new Chart(ctx, {
                       type: 'line',
                       data: {
-                        labels: ${JSON.stringify(stats.dailyStats.slice(-14).map(s => s.date.slice(5)))},
+                        labels: ${JSON.stringify(stats.dailyStats.slice(-14).map((s) => s.date.slice(5)))},
                         datasets: [{
                           label: 'Hits',
-                          data: ${JSON.stringify(stats.dailyStats.slice(-14).map(s => s.hits))},
+                          data: ${JSON.stringify(stats.dailyStats.slice(-14).map((s) => s.hits))},
                           borderColor: isDark ? '#60a5fa' : '#3b82f6',
                           backgroundColor: isDark ? 'rgba(96, 165, 250, 0.1)' : 'rgba(59, 130, 246, 0.1)',
                           tension: 0.5,
@@ -192,8 +200,9 @@ export default function InfoPage(props: {
                     });
                   }
                 })();
-              `
-            }} />
+              `,
+              }}
+            />
           </div>
         )}
 
@@ -207,7 +216,10 @@ export default function InfoPage(props: {
             <div class="space-y-3">
               {stats.topReferrers.length > 0 ? (
                 stats.topReferrers.map((ref) => (
-                  <div key={ref.referrer} class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+                  <div
+                    key={ref.referrer}
+                    class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2"
+                  >
                     <span class="text-sm text-slate-600 dark:text-slate-400 truncate flex-1">
                       {ref.referrer}
                     </span>
@@ -217,7 +229,9 @@ export default function InfoPage(props: {
                   </div>
                 ))
               ) : (
-                <p class="text-slate-500 dark:text-slate-400 text-sm">No referrer data available</p>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">
+                  No referrer data available
+                </p>
               )}
             </div>
           </div>
@@ -230,7 +244,10 @@ export default function InfoPage(props: {
             <div class="space-y-3">
               {stats.topCountries.length > 0 ? (
                 stats.topCountries.map((country) => (
-                  <div key={country.country} class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+                  <div
+                    key={country.country}
+                    class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2"
+                  >
                     <span class="text-sm text-slate-600 dark:text-slate-400">
                       {country.country}
                     </span>
@@ -240,7 +257,9 @@ export default function InfoPage(props: {
                   </div>
                 ))
               ) : (
-                <p class="text-slate-500 dark:text-slate-400 text-sm">No geographic data available</p>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">
+                  No geographic data available
+                </p>
               )}
             </div>
           </div>
@@ -256,7 +275,10 @@ export default function InfoPage(props: {
             <div class="space-y-3">
               {stats.topUserAgents.length > 0 ? (
                 stats.topUserAgents.map((ua) => (
-                  <div key={ua.agent} class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+                  <div
+                    key={ua.agent}
+                    class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2"
+                  >
                     <span class="text-sm text-slate-600 dark:text-slate-400">
                       {ua.agent}
                     </span>
@@ -266,7 +288,9 @@ export default function InfoPage(props: {
                   </div>
                 ))
               ) : (
-                <p class="text-slate-500 dark:text-slate-400 text-sm">No user agent data available</p>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">
+                  No user agent data available
+                </p>
               )}
             </div>
           </div>
@@ -279,7 +303,10 @@ export default function InfoPage(props: {
             <div class="space-y-3">
               {stats.topPlatforms.length > 0 ? (
                 stats.topPlatforms.map((platform) => (
-                  <div key={platform.platform} class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+                  <div
+                    key={platform.platform}
+                    class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2"
+                  >
                     <span class="text-sm text-slate-600 dark:text-slate-400">
                       {platform.platform}
                     </span>
@@ -289,7 +316,9 @@ export default function InfoPage(props: {
                   </div>
                 ))
               ) : (
-                <p class="text-slate-500 dark:text-slate-400 text-sm">No platform data available</p>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">
+                  No platform data available
+                </p>
               )}
             </div>
           </div>

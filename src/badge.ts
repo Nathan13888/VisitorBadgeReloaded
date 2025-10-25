@@ -11,7 +11,7 @@ export type BadgeOptions = {
 };
 
 export const createBadge = async (
-  opt: BadgeOptions
+  opt: BadgeOptions,
 ): Promise<string | null> => {
   const qry = `${SHIELDS_URL}/badge/${opt.label}-${opt.text}-${opt.colour}?labelColor=${opt.labelColour}&style=${opt.style}&logo=${opt.logo}&logoColor=${opt.logoColour}`;
 

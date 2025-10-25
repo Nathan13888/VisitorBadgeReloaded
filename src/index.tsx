@@ -1,16 +1,16 @@
 import { Hono } from "hono";
+import type { FC } from "hono/jsx";
 import { type BadgeOptions, createBadge } from "./badge";
+import { BadgeDO } from "./do";
 import {
+  page_id_exists,
   page_id_fetch,
   page_id_fetch_add_one,
   page_id_get_analytics,
-  page_id_exists,
 } from "./page";
-import LandingPage from "./pages/landing";
-import type { FC } from "hono/jsx";
 import InfoPage from "./pages/info";
-import { BadgeDO } from "./do";
-import { checkRateLimit, RATE_LIMITS } from "./rate-limit";
+import LandingPage from "./pages/landing";
+import { RATE_LIMITS, checkRateLimit } from "./rate-limit";
 
 export { BadgeDO };
 

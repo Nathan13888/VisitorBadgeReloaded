@@ -1,12 +1,12 @@
-import { hashPageId } from "./util";
 import type { AnalyticsSummary } from "./do";
+import { hashPageId } from "./util";
 
 /**
  * Get Durable Object stub for a page ID
  */
 function getStub(
   namespace: DurableObjectNamespace,
-  pageId: string
+  pageId: string,
 ): DurableObjectStub {
   // Use page ID as the durable object ID for deterministic routing
   const id = namespace.idFromName(pageId);
@@ -16,7 +16,7 @@ function getStub(
 // Fetch page id count without modification
 export const page_id_fetch = async (
   analyticsNamespace: DurableObjectNamespace,
-  pageId: string
+  pageId: string,
 ): Promise<string> => {
   const stub = getStub(analyticsNamespace, pageId);
   const response = await stub.fetch("http://do/count");
@@ -28,7 +28,7 @@ export const page_id_fetch = async (
 export const page_id_fetch_add_one = async (
   analyticsNamespace: DurableObjectNamespace,
   pageId: string,
-  request: Request
+  request: Request,
 ): Promise<string> => {
   // Extract request metadata
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -37,7 +37,7 @@ export const page_id_fetch_add_one = async (
   const userAgent = request.headers.get("User-Agent") || "unknown";
 
   const stub = getStub(analyticsNamespace, pageId);
-  
+
   const payload = {
     pageId,
     ip,
@@ -61,15 +61,15 @@ export const page_id_fetch_add_one = async (
  */
 export const page_id_get_analytics = async (
   analyticsNamespace: DurableObjectNamespace,
-  pageId: string
+  pageId: string,
 ): Promise<AnalyticsSummary | null> => {
   const stub = getStub(analyticsNamespace, pageId);
   const response = await stub.fetch("http://do/summary");
-  
+
   if (!response.ok) {
     return null;
   }
-  
+
   return await response.json<AnalyticsSummary>();
 };
 
@@ -78,7 +78,7 @@ export const page_id_get_analytics = async (
  */
 export const page_id_exists = async (
   analyticsNamespace: DurableObjectNamespace,
-  pageId: string
+  pageId: string,
 ): Promise<boolean> => {
   const stub = getStub(analyticsNamespace, pageId);
   const response = await stub.fetch("http://do/exists");
