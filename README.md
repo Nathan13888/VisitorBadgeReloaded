@@ -1,5 +1,7 @@
 # Visitor Badge Reloaded ✨
 
+> 10/25/25: Implemented rate limiting.
+
 > 10/19/25: Migrated from Cloudflare KV to DO for storage backend
 
 > 10/19/25: New website at <https://vbr.nathanchung.dev>

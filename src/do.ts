@@ -1,4 +1,6 @@
 import { DurableObject } from "cloudflare:workers";
+import type { RateLimitConfig, RateLimitResult } from "./rate-limit";
+import { handleRateLimitCheck } from "./rate-limit";
 
 /**
  * Analytics data structure
@@ -69,7 +71,7 @@ function getDateBucket(timestamp: number): string {
 function parseHourBucket(bucket: string): number {
   const parts = bucket.split("-");
   return new Date(
-    `${parts[0]}-${parts[1]}-${parts[2]}T${parts[3]}:00:00Z`
+    `${parts[0]}-${parts[1]}-${parts[2]}T${parts[3]}:00:00Z`,
   ).getTime();
 }
 
@@ -85,23 +87,24 @@ function parseDateBucket(bucket: string): number {
  */
 function detectPlatform(userAgent: string): string {
   const ua = userAgent.toLowerCase();
-  
+
   // Bots and crawlers
-  if (ua.includes('bot') || ua.includes('crawler') || ua.includes('spider')) {
-    return 'Bot';
+  if (ua.includes("bot") || ua.includes("crawler") || ua.includes("spider")) {
+    return "Bot";
   }
-  
+
   // Mobile platforms
-  if (ua.includes('android')) return 'Android';
-  if (ua.includes('iphone') || ua.includes('ipad') || ua.includes('ipod')) return 'iOS';
-  
+  if (ua.includes("android")) return "Android";
+  if (ua.includes("iphone") || ua.includes("ipad") || ua.includes("ipod"))
+    return "iOS";
+
   // Desktop platforms
-  if (ua.includes('windows')) return 'Windows';
-  if (ua.includes('mac os')) return 'macOS';
-  if (ua.includes('linux')) return 'Linux';
-  if (ua.includes('cros')) return 'Chrome OS';
-  
-  return 'Other';
+  if (ua.includes("windows")) return "Windows";
+  if (ua.includes("mac os")) return "macOS";
+  if (ua.includes("linux")) return "Linux";
+  if (ua.includes("cros")) return "Chrome OS";
+
+  return "Other";
 }
 
 /**
@@ -109,27 +112,27 @@ function detectPlatform(userAgent: string): string {
  */
 function simplifyUserAgent(userAgent: string): string {
   const ua = userAgent.toLowerCase();
-  
+
   // Check for common bots first
-  if (ua.includes('googlebot')) return 'Googlebot';
-  if (ua.includes('bingbot')) return 'Bingbot';
-  if (ua.includes('slackbot')) return 'Slackbot';
-  if (ua.includes('twitterbot')) return 'Twitterbot';
-  if (ua.includes('facebookexternalhit')) return 'Facebook Bot';
-  if (ua.includes('linkedinbot')) return 'LinkedIn Bot';
-  if (ua.includes('discordbot')) return 'Discord Bot';
-  if (ua.includes('whatsapp')) return 'WhatsApp';
-  
+  if (ua.includes("googlebot")) return "Googlebot";
+  if (ua.includes("bingbot")) return "Bingbot";
+  if (ua.includes("slackbot")) return "Slackbot";
+  if (ua.includes("twitterbot")) return "Twitterbot";
+  if (ua.includes("facebookexternalhit")) return "Facebook Bot";
+  if (ua.includes("linkedinbot")) return "LinkedIn Bot";
+  if (ua.includes("discordbot")) return "Discord Bot";
+  if (ua.includes("whatsapp")) return "WhatsApp";
+
   // Browsers
-  if (ua.includes('edg/')) return 'Edge';
-  if (ua.includes('chrome/') && !ua.includes('edg')) return 'Chrome';
-  if (ua.includes('firefox/')) return 'Firefox';
-  if (ua.includes('safari/') && !ua.includes('chrome')) return 'Safari';
-  
+  if (ua.includes("edg/")) return "Edge";
+  if (ua.includes("chrome/") && !ua.includes("edg")) return "Chrome";
+  if (ua.includes("firefox/")) return "Firefox";
+  if (ua.includes("safari/") && !ua.includes("chrome")) return "Safari";
+
   // GitHub's image proxy
-  if (ua.includes('github-camo')) return 'GitHub Camo';
-  
-  return 'Other';
+  if (ua.includes("github-camo")) return "GitHub Camo";
+
+  return "Other";
 }
 
 /**
@@ -153,6 +156,13 @@ export class BadgeDO extends DurableObject {
     const path = url.pathname;
 
     try {
+      // Handle rate limit check
+      if (path === "/ratelimit" && request.method === "POST") {
+        const config = await request.json<RateLimitConfig>();
+        const result = await handleRateLimitCheck(this.ctx.storage, config);
+        return Response.json(result);
+      }
+
       if (path === "/count" && request.method === "GET") {
         const result = await this.getCount();
         return Response.json(result);
@@ -199,10 +209,7 @@ export class BadgeDO extends DurableObject {
       return Response.json({ error: "Not found" }, { status: 404 });
     } catch (error) {
       console.error("Error in BadgeDO:", error);
-      return Response.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+      return Response.json({ error: "Internal server error" }, { status: 500 });
     }
   }
 
@@ -218,7 +225,7 @@ export class BadgeDO extends DurableObject {
       // Convert uniqueVisitors array back to Set
       if (Array.isArray(this.analytics.uniqueVisitors)) {
         this.analytics.uniqueVisitors = new Set(
-          this.analytics.uniqueVisitors as unknown as string[]
+          this.analytics.uniqueVisitors as unknown as string[],
         );
       }
     } else {
@@ -237,7 +244,7 @@ export class BadgeDO extends DurableObject {
       // Get the pageId from the Durable Object name
       // Note: The pageId is stored in the ctx.id.name since we use idFromName
       const pageId = this.ctx.id.name || pageIdHint;
-      
+
       if (!pageId) {
         console.log("No pageId found for migration");
         return;
@@ -249,15 +256,15 @@ export class BadgeDO extends DurableObject {
 
       // Try to get the count from KV
       const kvCount = await this.kvNamespace.get(hashedKey);
-      
+
       if (kvCount) {
         const count = Number.parseInt(kvCount, 10);
         if (!Number.isNaN(count) && count > 0) {
           const now = Date.now();
           const dateBucket = this.getDateBucket(now);
-          
+
           console.log(`Migrating badge ${pageId} from KV: ${count} hits`);
-          
+
           // Initialize analytics with migrated count
           this.analytics = {
             pageId: pageId,
@@ -276,8 +283,10 @@ export class BadgeDO extends DurableObject {
 
           // Persist the migrated data
           await this.persist();
-          
-          console.log(`Successfully migrated badge ${pageId} with ${count} hits`);
+
+          console.log(
+            `Successfully migrated badge ${pageId} with ${count} hits`,
+          );
         }
       }
     } catch (error) {

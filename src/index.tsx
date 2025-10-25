@@ -1,10 +1,16 @@
 import { Hono } from "hono";
 import { type BadgeOptions, createBadge } from "./badge";
-import { page_id_fetch, page_id_fetch_add_one, page_id_get_analytics, page_id_exists } from "./page";
+import {
+  page_id_fetch,
+  page_id_fetch_add_one,
+  page_id_get_analytics,
+  page_id_exists,
+} from "./page";
 import LandingPage from "./pages/landing";
 import type { FC } from "hono/jsx";
 import InfoPage from "./pages/info";
 import { BadgeDO } from "./do";
+import { checkRateLimit, RATE_LIMITS } from "./rate-limit";
 
 export { BadgeDO };
 
@@ -53,13 +59,35 @@ app.get("/healthz", (c) => {
 // Analytics API endpoint
 app.get("/api/analytics/:pageId", async (c) => {
   const { pageId } = c.req.param();
-  
+
   if (!pageId) {
     return c.json({ error: "page_id is required" }, 400);
   }
 
   const analytics = c.env.BADGE_STORE;
-  
+
+  // Check rate limit
+  const rateLimitResult = await checkRateLimit(
+    analytics,
+    pageId,
+    RATE_LIMITS.analytics,
+  );
+
+  // Add rate limit headers
+  c.header("X-RateLimit-Limit", rateLimitResult.limit.toString());
+  c.header("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+  c.header(
+    "X-RateLimit-Reset",
+    new Date(rateLimitResult.resetAt).toISOString(),
+  );
+
+  if (!rateLimitResult.allowed) {
+    return c.json(
+      { error: "Rate limit exceeded", retryAfter: rateLimitResult.resetAt },
+      429,
+    );
+  }
+
   // Check if badge exists first
   const exists = await page_id_exists(analytics, pageId);
   if (!exists) {
@@ -79,6 +107,36 @@ app.get("/badge", async (c) => {
   const pageId = c.req.query("page_id");
   if (!pageId) {
     return c.json({ error: "page_id is required" }, 400);
+  }
+
+  // Check rate limit for badge generation
+  const analytics = c.env.BADGE_STORE;
+  const rateLimitResult = await checkRateLimit(
+    analytics,
+    pageId,
+    RATE_LIMITS.badge,
+  );
+
+  // Add rate limit headers
+  c.header("X-RateLimit-Limit", rateLimitResult.limit.toString());
+  c.header("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+  c.header(
+    "X-RateLimit-Reset",
+    new Date(rateLimitResult.resetAt).toISOString(),
+  );
+
+  if (!rateLimitResult.allowed) {
+    // Return a simple error badge instead of JSON for better UX
+    const errorBadge = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="20">
+      <rect width="150" height="20" fill="#e05d44"/>
+      <text x="75" y="14" font-family="Verdana" font-size="11" fill="#fff" text-anchor="middle">Rate Limit Exceeded</text>
+    </svg>`;
+    c.header("Content-Type", "image/svg+xml");
+    c.header(
+      "Retry-After",
+      Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000).toString(),
+    );
+    return c.body(errorBadge, 429);
   }
 
   const colour = c.req.query("color") ?? "blue";
@@ -106,7 +164,6 @@ app.get("/badge", async (c) => {
   c.header("Expires", expiry);
 
   // get count using Durable Object analytics
-  const analytics = c.env.BADGE_STORE;
   let text = await (hit
     ? page_id_fetch_add_one(analytics, pageId, c.req.raw)
     : page_id_fetch(analytics, pageId));
