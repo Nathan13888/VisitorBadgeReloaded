@@ -13,7 +13,12 @@
     "bench:all": "bun run benchmark/benchmark.ts && bun run benchmark/cache-benchmark.ts && bun run benchmark/latency-test.ts && bun run benchmark/generate-report.ts"
   },
   "dependencies": {
-    "hono": "^4.6.11"
+    "@hono/standard-validator": "^0.1.5",
+    "@scalar/hono-api-reference": "^0.9.22",
+    "@scalar/openapi-to-markdown": "^0.2.45",
+    "hono": "^4.6.11",
+    "hono-openapi": "^1.1.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
