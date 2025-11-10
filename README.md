@@ -213,7 +213,7 @@ Please sauce PRs if there are problems ;)
 
 ### Docker (V1)
 
-This app could be packaged as a Docker image. Prebuilt docker images of VBR are also available on Docker Hub and on the Github Container Registry. **Just run the relevant commands found in the [**Makefile**](Makefile)**. Then deploy to your choosen cloud service or even to your own server. However, note that there is no HTTPS support and VBR should be placed behind something else that provides HTTPS (eg. reverse proxy, Heroku...).
+This app could be packaged as a Docker image. Prebuilt docker images of VBR are also available on Docker Hub and on the Github Container Registry. **Just run the relevant commands found in the [**Makefile**](https://github.com/Nathan13888/VisitorBadgeReloaded/blob/master/v1/Makefile)**. Then deploy to your choosen cloud service or even to your own server. However, note that there is no HTTPS support and VBR should be placed behind something else that provides HTTPS (eg. reverse proxy, Heroku...).
 
 ### Cloudflare (V2)
 
