@@ -1,5 +1,7 @@
 # Changelog
 
+08/05/26: Removed raw IP retention from badge analytics. Visitor addresses were previously kept in Durable Object storage as part of the unique visitor set; that data is now deleted the first time each badge is loaded and is never written again. The "Unique Visitors" metric is replaced by an estimated daily unique visitor count, computed from a HyperLogLog sketch keyed by a per-day secret that is discarded at midnight UTC (~6.5% margin of error).
+
 10/25/25: Implemented rate limiting.
 
 10/19/25: Migrated from Cloudflare KV to DO for storage backend

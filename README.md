@@ -10,17 +10,17 @@
 ![](https://img.shields.io/github/issues-pr-raw/Nathan13888/VisitorBadgeReloaded?label=Open+PRs)
 ![](https://img.shields.io/github/issues-pr-closed-raw/Nathan13888/VisitorBadgeReloaded?label=Closed+PRs)
 
-**Visitor Badge Reloaded** is a project inspired by [visitor-badge](https://github.com/jwenjian/visitor-badge) which is **no longer maintained**, unfortunately.
+**Visitor Badge Reloaded** began as a faster, maintained, and more customizable replacement
+for [visitor-badge](https://github.com/jwenjian/visitor-badge).
 
-In addition, it was missing some features which made it feel incomplete to me. It was also written using Python which I'm personally not a huge fan of, especially when used as a REST api.
-
-Hence, something of **better performance** and **functionality** _must_ be made!
+It now provides configurable visitor-count badges, traffic analytics, and rate-limited web
+and API access while remaining compatible with the original service.
 
 ---
 
 ## 🏎️ Benchmarks
 
-A comprehensive benchmark suite is available to test the publicly hosted service! See [benchmark/README.md](benchmark/README.md) for details.
+> See [benchmark/README.md](benchmark/README.md) for details.
 
 **Results:**
 
@@ -133,18 +133,13 @@ To use the options, **append** these flags to the URL of the badge!
 
 ## 🚢 Migrating From Visitor Badge
 
+If you use the original [Visitor Badge](https://github.com/jwenjian/visitor-badge), just replace the domain name:
+
 ```
-TLDR; REPLACE THE DOMAIN NAME
 ie. 'visitor-badge.glitch.me/badge?page_id=YOURPAGEID' --> 'https://vbr.nathanchung.dev/badge?page_id=YOURPAGEID'
 ```
 
-**Visitor Badge Reloaded** has ALL the same features as the original [Visitor Badge](https://github.com/jwenjian/visitor-badge) with EVEN MORE FEATURES!
-
-This means that all you have to do is replace the **url** of the badge with `https://vbr.nathanchung.dev/badge?page_id=<your own page_id here>`. The total visits will remain the **exact same** as well!
-
-Also, **VBR features could be configured as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string)**!
-
-### Options (Old Option) (add as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string)) 👀
+### Options (Old Option) (add as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string))
 
 **IMPORTANT: Other than the `page_id` option, there exists additional styling options and functional options (in the future). More details about the options could be found at the bottom of the [Shields.io website](https://shields.io/). Also, all the options are specified as HTTP parameters!!!**
 
@@ -157,30 +152,13 @@ Also, **VBR features could be configured as a [HTTP query parameter](https://en.
 - `logoColor` --> refer to `color` for the formatting
 - `cache` --> \*just put `&cache=on` at the end of the badge url
 
-## 🚀 Feature Roadmap
+## 🥳 Contributing
 
-- Deployment
-  - [x] High availability (stateless)
-  - [x] Upgraded Shields.io
-  - [ ] Automated scheduled backups: badge counts
-- API Improvements
-  - [x] Rate limiting, Prevent Abuse
-  - [x] /healthz endpoints
-  - [ ] Uptime Monitoring
-- New Website
-  - [ ] Personalized Analytics About Visitors
-
-## 🥳 Supporting this project
-
-I originally created this project because I personally wanted something that was built to my (relatively high) expectations of performance and customizability. I share this project and its hosted service to the public as I thought that this would be something that would benefit others. However, **maintaining such a project** and **handling the demands of all the users that would use this service** would incur additional work and costs for myself. Hence, it would be **greatly** appreciated if you could support this project by the following ways:
-
-1. **Star ⭐ and share** this project!
-2. **Contribute** to the development. Refer to [Contributing](#Contributing)
-3. **Bug tracking!** If you find any issues, please create an Issue so the problem could be fixed as soon as possible.
+1. **Star ⭐** this project.
+2. **Create an Issue** on Github if there are any issues of feature requests.
+3. **Submit PRs**. Refer to [Contributing](#Contributing)
 
 ## 📦 Deploying your own instance (self-hosting)
-
-Please sauce PRs if there are problems ;)
 
 ### Cloudflare
 
