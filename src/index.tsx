@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { FC } from "hono/jsx";
 import { type BadgeOptions, createBadge } from "./badge";
 import { BadgeDO } from "./do";
+import { shouldRecordHit } from "./hit-policy";
 import {
   page_id_exists,
   page_id_fetch,
@@ -334,7 +335,7 @@ app.get(
     c.header("Expires", expiry);
 
     // get count using Durable Object analytics
-    let text = await (hit
+    let text = await (shouldRecordHit(pageId, c.req.raw, hit)
       ? page_id_fetch_add_one(analytics, pageId, c.req.raw)
       : page_id_fetch(analytics, pageId));
 
