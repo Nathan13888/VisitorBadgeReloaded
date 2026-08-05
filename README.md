@@ -31,9 +31,7 @@
 
 <!-- TODO: host this with VBR too -->
 
-[![](https://goreportcard.com/badge/github.com/Nathan13888/VisitorBadgeReloaded)](https://goreportcard.com/report/github.com/Nathan13888/VisitorBadgeReloaded)
 [![](https://img.shields.io/badge/License-MIT%202.0-blue.svg)](https://github.com/Nathan13888/VisitorBadgeReloaded/blob/master/LICENSE)
-[![Coverage Status](https://coveralls.io/repos/github/Nathan13888/VisitorBadgeReloaded/badge.svg?branch=master)](https://coveralls.io/github/Nathan13888/VisitorBadgeReloaded?branch=master)
 ![](https://img.shields.io/github/issues-raw/Nathan13888/VisitorBadgeReloaded?label=Issues)
 ![](https://img.shields.io/github/issues-closed-raw/Nathan13888/VisitorBadgeReloaded?label=Closed+Issues)
 ![](https://img.shields.io/github/issues-pr-raw/Nathan13888/VisitorBadgeReloaded?label=Open+PRs)
@@ -211,11 +209,7 @@ I originally created this project because I personally wanted something that was
 
 Please sauce PRs if there are problems ;)
 
-### Docker (V1)
-
-This app could be packaged as a Docker image. Prebuilt docker images of VBR are also available on Docker Hub and on the Github Container Registry. **Just run the relevant commands found in the [**Makefile**](Makefile)**. Then deploy to your choosen cloud service or even to your own server. However, note that there is no HTTPS support and VBR should be placed behind something else that provides HTTPS (eg. reverse proxy, Heroku...).
-
-### Cloudflare (V2)
+### Cloudflare
 
 ```bash
 # 1. install dependencies
@@ -231,18 +225,7 @@ bun run deploy
 
 ## 💻 Software Used
 
-### V2
-
 - Cloudflare Workers
 - Typescript
 - Hono
-- shields.io
-
-### V1
-
-- Golang
-- Docker
-- Mux (router)
-- Zerolog (logger)
-- Redis (Cache and Database)
 - shields.io
