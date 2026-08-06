@@ -13,10 +13,11 @@ import type { FC } from "hono/jsx";
 import z from "zod";
 import { handleBadgeRequest } from "./badge-request";
 import { BadgeDO } from "./do";
-import { page_id_exists, page_id_get_analytics } from "./page";
+import { page_id_exists, page_id_get_analytics } from "./do-client";
 import InfoPage from "./pages/info";
 import LandingPage from "./pages/landing";
 import { clientKey, withinLimit } from "./rate-limit";
+import { AnalyticsSummarySchema, ErrorResponseSchema } from "./schema";
 
 export { BadgeDO };
 
@@ -123,73 +124,28 @@ app.get(
       200: {
         description: "Successful response",
         content: {
-          "application/json": {
-            schema: resolver(
-              z.object({
-                totalHits: z.number(),
-                uniqueVisitorsToday: z
-                  .number()
-                  .nullable()
-                  .describe(
-                    "Estimated distinct visitors so far today (UTC), from a HyperLogLog sketch with ~6.5% margin of error. Not a person-level count. Null when the metric is unavailable.",
-                  ),
-                hitsLast24Hours: z.number(),
-                hitsLast7Days: z.number(),
-                hitsLast14Days: z.number(),
-                topReferrers: z.array(
-                  z.object({ referrer: z.string(), count: z.number() }),
-                ),
-                topCountries: z.array(
-                  z.object({ country: z.string(), count: z.number() }),
-                ),
-                topUserAgents: z.array(
-                  z.object({ agent: z.string(), count: z.number() }),
-                ),
-                topPlatforms: z.array(
-                  z.object({ platform: z.string(), count: z.number() }),
-                ),
-                dailyStats: z.array(
-                  z.object({
-                    date: z.string(),
-                    hits: z.number(),
-                    uniqueVisitors: z
-                      .number()
-                      .nullable()
-                      .describe(
-                        "Estimated distinct visitors that day (~6.5% margin of error), or null for days predating this measurement.",
-                      ),
-                  }),
-                ),
-                hourlyStats: z.array(
-                  z.object({ hour: z.string(), hits: z.number() }),
-                ),
-              }),
-            ),
-          },
+          // The same schema the Durable Object's reply is validated against and
+          // the info page renders, so what is published here cannot describe a
+          // shape the service does not actually return.
+          "application/json": { schema: resolver(AnalyticsSummarySchema) },
         },
       },
       400: {
         description: "Bad Request",
         content: {
-          "application/json": {
-            schema: resolver(z.object({ error: z.string() })),
-          },
+          "application/json": { schema: resolver(ErrorResponseSchema) },
         },
       },
       404: {
         description: "Not Found",
         content: {
-          "application/json": {
-            schema: resolver(z.object({ error: z.string() })),
-          },
+          "application/json": { schema: resolver(ErrorResponseSchema) },
         },
       },
       429: {
         description: "Too Many Requests",
         content: {
-          "application/json": {
-            schema: resolver(z.object({ error: z.string() })),
-          },
+          "application/json": { schema: resolver(ErrorResponseSchema) },
         },
       },
     },
@@ -247,9 +203,7 @@ app.get(
       400: {
         description: "Bad Request",
         content: {
-          "application/json": {
-            schema: resolver(z.object({ error: z.string() })),
-          },
+          "application/json": { schema: resolver(ErrorResponseSchema) },
         },
       },
       429: {
@@ -262,9 +216,7 @@ app.get(
       500: {
         description: "Internal Server Error",
         content: {
-          "application/json": {
-            schema: resolver(z.object({ error: z.string() })),
-          },
+          "application/json": { schema: resolver(ErrorResponseSchema) },
         },
       },
     },

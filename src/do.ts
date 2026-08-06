@@ -1,61 +1,21 @@
 import { DurableObject } from "cloudflare:workers";
+import { DO_ROUTES } from "./do-client";
 import {
-  type HllSketch,
   addToSketch,
   createSketch,
   deriveDailyKey,
   estimateSketch,
 } from "./hll";
+import {
+  RETENTION_DAYS,
+  StoredAnalyticsSchema,
+  emptyAnalytics,
+  upgradeStoredAnalytics,
+} from "./schema";
+import type { AnalyticsSummary, HitRequest, StoredAnalytics } from "./schema";
 
-/**
- * Analytics data structure
- */
-export interface BadgeAnalytics {
-  pageId: string;
-  totalHits: number;
-  lastUpdated: number;
-  // Temporal metrics - hourly buckets for last 14 days
-  hourlyHits: Record<string, number>;
-  // Daily aggregates
-  dailyHits: Record<string, number>;
-  // Frozen estimated unique visitor counts for past days only
-  dailyUniqueVisitors: Record<string, number>;
-  // In-progress sketch for the current UTC day (see ./hll)
-  todaySketch?: HllSketch;
-  // Referrer tracking
-  referrers: Record<string, number>;
-  // Geographic data (country codes)
-  countries: Record<string, number>;
-  // User agent tracking (browser/bot detection)
-  userAgents: Record<string, number>;
-  // Platform tracking (detected from user agent)
-  platforms: Record<string, number>;
-}
-
-/**
- * Summary of analytics for API responses
- */
-export interface AnalyticsSummary {
-  totalHits: number;
-  // Estimated distinct visitors so far today (HyperLogLog, ~6.5% error).
-  // null when the metric is unavailable, e.g. VISITOR_HASH_KEY is unset
-  uniqueVisitorsToday: number | null;
-  hitsLast24Hours: number;
-  hitsLast7Days: number;
-  hitsLast14Days: number;
-  topReferrers: Array<{ referrer: string; count: number }>;
-  topCountries: Array<{ country: string; count: number }>;
-  topUserAgents: Array<{ agent: string; count: number }>;
-  topPlatforms: Array<{ platform: string; count: number }>;
-  // uniqueVisitors is null for days that predate unique visitor measurement,
-  // which is not the same as a day on which nobody visited
-  dailyStats: Array<{
-    date: string;
-    hits: number;
-    uniqueVisitors: number | null;
-  }>;
-  hourlyStats: Array<{ hour: string; hits: number }>;
-}
+/** How long any bucketed history is kept, in milliseconds. */
+const RETENTION_MS = RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
 /**
  * Get current hour bucket key (format: YYYY-MM-DD-HH)
@@ -123,6 +83,26 @@ function detectPlatform(userAgent: string): string {
 }
 
 /**
+ * Bucket a request's referrer by host.
+ *
+ * `Referer` is attacker-controlled and need not be a URL at all. Parsing it
+ * unguarded threw, which failed the whole hit, which returned a 500 that the
+ * worker then read a count out of - a malformed header on one request was
+ * enough to break the badge. An unparseable value is just an unknown source.
+ */
+function referrerHost(referrer: string): string {
+  if (referrer === "direct") {
+    return "Direct";
+  }
+
+  try {
+    return new URL(referrer).hostname;
+  } catch {
+    return "Unknown";
+  }
+}
+
+/**
  * Simplify user agent for tracking
  */
 function simplifyUserAgent(userAgent: string): string {
@@ -154,7 +134,7 @@ function simplifyUserAgent(userAgent: string): string {
  * Durable Object for badge analytics
  */
 export class BadgeDO extends DurableObject {
-  private analytics: BadgeAnalytics | null = null;
+  private analytics: StoredAnalytics | null = null;
   private initialized = false;
   private kvNamespace: KVNamespace;
   private hashSecret: string | undefined;
@@ -182,31 +162,39 @@ export class BadgeDO extends DurableObject {
   }
 
   /**
-   * Fetch handler for Durable Object HTTP requests
+   * Fetch handler for Durable Object HTTP requests.
+   *
+   * Routes are matched against the same table `src/do-client.ts` calls through,
+   * so the two halves of the boundary cannot disagree about a path or a method.
    */
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
+    const method = request.method;
 
     try {
-      if (path === "/count" && request.method === "GET") {
-        const result = await this.getCount();
-        return Response.json(result);
+      if (path === DO_ROUTES.count.path && method === DO_ROUTES.count.method) {
+        return Response.json(await this.getCount());
       }
 
-      if (path === "/hit" && request.method === "POST") {
-        const payload = await request.json<{
-          pageId: string;
-          ip: string;
-          referrer: string;
-          country: string;
-          userAgent: string;
-        }>();
-        const result = await this.recordHit(payload);
-        return Response.json(result);
+      if (path === DO_ROUTES.hit.path && method === DO_ROUTES.hit.method) {
+        // Validated rather than cast: a payload that does not match is a
+        // client bug, and answering 400 says so instead of failing somewhere
+        // deeper with a message about the wrong thing.
+        const payload = DO_ROUTES.hit.request.safeParse(await request.json());
+        if (!payload.success) {
+          return Response.json(
+            { error: `Invalid hit payload: ${payload.error.message}` },
+            { status: 400 },
+          );
+        }
+        return Response.json(await this.recordHit(payload.data));
       }
 
-      if (path === "/summary" && request.method === "GET") {
+      if (
+        path === DO_ROUTES.summary.path &&
+        method === DO_ROUTES.summary.method
+      ) {
         const result = await this.getSummary();
         if (!result) {
           return Response.json({ error: "No analytics data" }, { status: 404 });
@@ -214,7 +202,10 @@ export class BadgeDO extends DurableObject {
         return Response.json(result);
       }
 
-      if (path === "/exists" && request.method === "GET") {
+      if (
+        path === DO_ROUTES.exists.path &&
+        method === DO_ROUTES.exists.method
+      ) {
         await this.initialize();
         return Response.json({ exists: this.analytics !== null });
       }
@@ -227,27 +218,42 @@ export class BadgeDO extends DurableObject {
   }
 
   /**
-   * Initialize analytics from storage
+   * Load analytics from storage, upgrading the record if it predates the
+   * current schema version.
+   *
+   * A record already at the current version is the fast path and writes
+   * nothing. Anything else goes through `upgradeStoredAnalytics` exactly once
+   * and is written straight back, so every subsequent load takes the fast path.
+   * That is what keeps compatibility handling out of the read path: past this
+   * point the record is known to match the schema and no field needs defending.
    */
   async initialize(pageIdHint?: string) {
     if (this.initialized) return;
 
-    const stored = await this.ctx.storage.get<BadgeAnalytics>("analytics");
-    if (stored) {
-      // Versions before 08/05/26 persisted a set of raw client addresses under
-      // `uniqueVisitors`. Strip it the first time such a badge is loaded and
-      // write the record back immediately, so the addresses stop existing.
-      const { uniqueVisitors, ...purged } = stored as BadgeAnalytics & {
-        uniqueVisitors?: unknown;
-      };
-      const hadLegacyVisitors = uniqueVisitors !== undefined;
+    const stored = await this.ctx.storage.get<unknown>("analytics");
 
-      this.analytics = purged;
-      if (!this.analytics.dailyUniqueVisitors) {
-        this.analytics.dailyUniqueVisitors = {};
-      }
+    if (stored !== undefined) {
+      const current = StoredAnalyticsSchema.safeParse(stored);
 
-      if (hadLegacyVisitors) {
+      if (current.success) {
+        this.analytics = current.data;
+      } else {
+        const { record, repaired } = upgradeStoredAnalytics(
+          stored,
+          this.ctx.id.name || pageIdHint || "",
+        );
+
+        if (repaired) {
+          // Not reachable from an orderly older record, so this means the
+          // stored value was actually damaged. The count is preserved when it
+          // was salvageable and the breakdowns around it reset.
+          console.error("analytics_record_repaired", {
+            pageId: record.pageId,
+            totalHits: record.totalHits,
+          });
+        }
+
+        this.analytics = record;
         await this.persist();
       }
     } else {
@@ -287,20 +293,13 @@ export class BadgeDO extends DurableObject {
 
           console.log(`Migrating badge ${pageId} from KV: ${count} hits`);
 
-          // Initialize analytics with migrated count
+          // Initialize analytics with migrated count. Written at the current
+          // schema version, so a migrated badge never takes the upgrade path.
           this.analytics = {
-            pageId: pageId,
+            ...emptyAnalytics(pageId, now),
             totalHits: count,
-            lastUpdated: now,
-            hourlyHits: {},
-            dailyHits: {
-              [dateBucket]: count, // Attribute all historical hits to today
-            },
-            dailyUniqueVisitors: {},
-            referrers: {},
-            countries: {},
-            userAgents: {},
-            platforms: {},
+            // Attribute all historical hits to today
+            dailyHits: { [dateBucket]: count },
           };
 
           // Persist the migrated data
@@ -323,7 +322,7 @@ export class BadgeDO extends DurableObject {
    *
    * Returns whether anything changed, so the caller knows to persist.
    */
-  private freezeStaleSketch(analytics: BadgeAnalytics, now: number): boolean {
+  private freezeStaleSketch(analytics: StoredAnalytics, now: number): boolean {
     const current = analytics.todaySketch;
     if (!current || current.date === getDateBucket(now)) {
       return false;
@@ -335,19 +334,18 @@ export class BadgeDO extends DurableObject {
   }
 
   /**
-   * Clean up old data outside the 14-day retention window
+   * Clean up old data outside the retention window
    */
   private cleanupOldData() {
     if (!this.analytics) return;
 
     const now = Date.now();
-    const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
 
     // Clean hourly data
     const hourlyHits: Record<string, number> = {};
     for (const [key, value] of Object.entries(this.analytics.hourlyHits)) {
       const timestamp = parseHourBucket(key);
-      if (now - timestamp < fourteenDaysMs) {
+      if (now - timestamp < RETENTION_MS) {
         hourlyHits[key] = value;
       }
     }
@@ -357,7 +355,7 @@ export class BadgeDO extends DurableObject {
     const dailyHits: Record<string, number> = {};
     for (const [key, value] of Object.entries(this.analytics.dailyHits)) {
       const timestamp = parseDateBucket(key);
-      if (now - timestamp < fourteenDaysMs) {
+      if (now - timestamp < RETENTION_MS) {
         dailyHits[key] = value;
       }
     }
@@ -369,7 +367,7 @@ export class BadgeDO extends DurableObject {
       this.analytics.dailyUniqueVisitors,
     )) {
       const timestamp = parseDateBucket(key);
-      if (now - timestamp < fourteenDaysMs) {
+      if (now - timestamp < RETENTION_MS) {
         dailyUniqueVisitors[key] = value;
       }
     }
@@ -379,38 +377,19 @@ export class BadgeDO extends DurableObject {
   /**
    * Record a hit
    */
-  async recordHit(request: {
-    pageId: string;
-    ip: string;
-    referrer: string;
-    country: string;
-    userAgent: string;
-  }): Promise<{ count: number }> {
+  async recordHit(request: HitRequest): Promise<{ count: number }> {
     await this.initialize(request.pageId);
 
     const now = Date.now();
     const hourBucket = getHourBucket(now);
     const dateBucket = getDateBucket(now);
 
-    // Initialize analytics if needed
+    // Initialize analytics if needed. Anything loaded from storage has already
+    // been brought to the current schema version by `initialize`, so from here
+    // on every field is known to exist.
     if (!this.analytics) {
-      this.analytics = {
-        pageId: request.pageId,
-        totalHits: 0,
-        lastUpdated: now,
-        hourlyHits: {},
-        dailyHits: {},
-        dailyUniqueVisitors: {},
-        referrers: {},
-        countries: {},
-        userAgents: {},
-        platforms: {},
-      };
+      this.analytics = emptyAnalytics(request.pageId, now);
     }
-
-    // Ensure new fields exist for existing data
-    if (!this.analytics.userAgents) this.analytics.userAgents = {};
-    if (!this.analytics.platforms) this.analytics.platforms = {};
 
     // Increment total hits
     this.analytics.totalHits += 1;
@@ -438,12 +417,8 @@ export class BadgeDO extends DurableObject {
     }
 
     // Track referrer
-    const referrerHost =
-      request.referrer !== "direct"
-        ? new URL(request.referrer).hostname
-        : "Direct";
-    this.analytics.referrers[referrerHost] =
-      (this.analytics.referrers[referrerHost] || 0) + 1;
+    const host = referrerHost(request.referrer);
+    this.analytics.referrers[host] = (this.analytics.referrers[host] || 0) + 1;
 
     // Track country
     this.analytics.countries[request.country] =
@@ -501,6 +476,9 @@ export class BadgeDO extends DurableObject {
       await this.persist();
     }
 
+    // Named windows rather than derived from the retention constant: these are
+    // published field names, so widening retention must not silently redefine
+    // what `hitsLast14Days` counts.
     const oneDayMs = 24 * 60 * 60 * 1000;
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
     const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
@@ -537,13 +515,13 @@ export class BadgeDO extends DurableObject {
       .slice(0, 10);
 
     // Get top user agents
-    const topUserAgents = Object.entries(this.analytics.userAgents || {})
+    const topUserAgents = Object.entries(this.analytics.userAgents)
       .map(([agent, count]) => ({ agent, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
     // Get top platforms
-    const topPlatforms = Object.entries(this.analytics.platforms || {})
+    const topPlatforms = Object.entries(this.analytics.platforms)
       .map(([platform, count]) => ({ platform, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);

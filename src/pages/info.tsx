@@ -1,4 +1,4 @@
-import type { AnalyticsSummary } from "../do";
+import type { AnalyticsSummary } from "../schema";
 
 export default function InfoPage(props: {
   id?: string;

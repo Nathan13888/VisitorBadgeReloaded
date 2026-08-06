@@ -1,6 +1,6 @@
 import { type BadgeOptions, createBadge } from "./badge";
+import { page_id_fetch, page_id_fetch_add_one } from "./do-client";
 import { shouldRecordHit } from "./hit-policy";
-import { page_id_fetch, page_id_fetch_add_one } from "./page";
 import { type Limiter, clientKey, hitKey, withinLimit } from "./rate-limit";
 
 /**
