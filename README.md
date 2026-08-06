@@ -81,8 +81,12 @@ To use the options, **append** these flags to the URL of the badge!
 | **Custom**             | `&custom=<format>`       | Allows a **custom string format** to be set for the count. Replaces `CNT` with the view count, so `&custom=CNT_visits` renders "42 visits".                                                                                                                                                                                          |
 | **Logo**               | `&logo=<logo name>`      | Adds a logo to the badge (refer to examples). Takes any [**Simple Icons**](https://simpleicons.org/) slug (`googlechrome`), the icon title with spaces as dashes (`google-chrome`), or a `data:` URI of your own image.                                                                                                               |
 | **Logo Colour**        | `&logoColor=<colour>`    | Recolours the logo. Same formats as `&color=`. Defaults to white; pass an empty value to keep the icon's own brand colour.                                                                                                                                                                                                           |
-| **cache** (deprecated) | `&cache=<anything here>` | **Disabled** by default. Changes the caching behaviour of the count by setting a time out. This works _very_ poorly with Github's Camo CDN if enabled (since Camo doesn't respect the expiry headers unless it's expired). If the flag `&cache=` is followed by any text (anything more than one character), caching is **enabled**. |
-| **hit**                | `&hit=off`               | **Enabled** by default. Determines if the badge will update the count (useful for duplicated badges or badges for just viewing the count). If left _empty_, it will update the count on each view. Any setting that is **non-empty (isn't `true` or `yes`**) is considered **disabled**.                                             |
+| **hit**                | `&hit=off`               | **Enabled** by default. Determines if the badge will update the count (useful for duplicated badges or badges for just viewing the count). Anything other than `true` or `yes` — including an empty value — is considered **disabled**. A disabled badge is cached for 15 seconds, so it is much cheaper to serve.                    |
+
+`&cache=` and `&unique=` are gone. Neither did anything: `&cache=` was never read by
+the code, and `&unique=` was rejected by request validation before it could be. Caching
+is no longer a knob — a badge that counts is never cached, and a badge that does not
+count always is. See [Caching](#caching).
 
 **Defaults**:
 
@@ -92,12 +96,45 @@ To use the options, **append** these flags to the URL of the badge!
 - Text: "Visitors"
 - Logo: _no logo_
 - Logo Colour: "white"
-- Cache: _disabled_
 - Hit: _enabled_
+
+### Caching
+
+A badge that counts a view (`&hit=` enabled, the default) is never cached, by
+anything. Caching it would let a cache answer GitHub's image proxy on the
+service's behalf and silently swallow the view.
+
+A badge that does not count (`&hit=false`) is cached at the Cloudflare location
+serving it for 15 seconds, and says so with `Cache-Control: public, max-age=15`.
+Within that window it costs no storage access at all. Several differently styled
+badges for one `page_id` also share a single count lookup, so a README full of
+them is one read rather than one per badge.
+
+Responses carry `X-VBR-Cache: HIT`, `MISS`, or `BYPASS` (for the counted badges
+that are never cacheable). Cache entries do not replicate between Cloudflare
+locations, so a `MISS` simply means you are the first to ask in that location.
+
+### Rate Limits
+
+Limits exist to bound cost, not to police badges, so they are keyed on the
+caller rather than on the badge — a popular badge is not throttled for being
+popular.
+
+- **Counting a view** is limited per client, per badge. Over the limit the badge
+  still renders normally; the view just is not counted. A rate limit never turns
+  a README into a broken image.
+- **Badge requests overall** are limited per client, and only checked when the
+  cache missed. Far over that limit a client gets a `429` and a "Rate Limit
+  Exceeded" badge.
+- **Analytics** (`/api/analytics/:pageId` and `/info/:id`) is limited per client
+  and returns `429` with `Retry-After`.
+
+Limits are enforced per Cloudflare location and are eventually consistent, so
+they are approximate by design.
 
 ### Examples 🧪
 
-<!-- TODO: invisible badge option, cache?? logo, logo colour, custom text -->
+<!-- TODO: invisible badge option, logo, logo colour, custom text -->
 
 #### Different text background
 
@@ -153,7 +190,7 @@ ie. 'visitor-badge.glitch.me/badge?page_id=YOURPAGEID' --> 'https://vbr.nathanch
 - `text=<Some text other than "Visitors">` --> put a customizable label on your badge
 - `logo` --> logo to put beside the badge, go to <https://simpleicons.org/> for the available names
 - `logoColor` --> refer to `color` for the formatting
-- `cache` --> \*just put `&cache=on` at the end of the badge url
+- `cache` --> **removed**, and never actually did anything. Caching is automatic now; see [Caching](#caching)
 
 ## 🥳 Contributing
 
@@ -181,7 +218,12 @@ bun i
 # weaker.
 wrangler secret put VISITOR_HASH_KEY
 
-# 4. deploy to cloudflare
+# 4. rate limiting needs no setup, but the `namespace_id`s under [[ratelimits]]
+# in `wrangler.toml` must be unique within your Cloudflare account. If you run
+# other Workers that use rate limiting, renumber them. Leaving the bindings out
+# entirely is supported - the limiters fail open and badges keep working.
+
+# 5. deploy to cloudflare
 # the Simple Icons set is generated into src/generated/ as part of the build,
 # so this needs devDependencies installed (`bun i` above covers it)
 bun run deploy

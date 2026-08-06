@@ -36,6 +36,38 @@ head_sampling_rate = 1
 binding = "vbr_badge_counts"
 id = "6a63980cfdb6493ca4bb8e8817060543"
 
+# Rate limiting uses the platform binding rather than Durable Object state, so a
+# request that is turned away costs nothing to store. Limits are per Cloudflare
+# location and eventually consistent, which is the right trade for abuse control
+# and the reason none of these are treated as an exact accounting of anything.
+#
+# `period` accepts only 10 or 60.
+
+# Bounds how fast one address can inflate one badge. Exceeding it still serves
+# the badge - the hit simply is not recorded - so this can never break a README.
+# Keyed with the page ID so GitHub Camo, whose addresses are shared by every
+# badge on GitHub, is not measured as a single abusive client.
+[[ratelimits]]
+name = "RL_BADGE_HIT"
+namespace_id = "1001"
+simple = { limit = 30, period = 60 }
+
+# The actual abuse brake: bounds total badge work per address, and so bounds
+# Durable Object creation by a client rotating through invented page IDs. Only
+# consulted when the edge cache missed. Deliberately generous because all
+# GitHub Camo traffic shares a small set of addresses; if this ever turns real
+# traffic away it is logged as `rate_limit_client_exceeded`.
+[[ratelimits]]
+name = "RL_BADGE_CLIENT"
+namespace_id = "1002"
+simple = { limit = 1200, period = 60 }
+
+# Analytics reads are far more expensive than a badge and are not cached.
+[[ratelimits]]
+name = "RL_ANALYTICS"
+namespace_id = "1003"
+simple = { limit = 30, period = 60 }
+
 [[durable_objects.bindings]]
 name = "BADGE_STORE"
 class_name = "BadgeDO"

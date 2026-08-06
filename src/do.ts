@@ -6,8 +6,6 @@ import {
   deriveDailyKey,
   estimateSketch,
 } from "./hll";
-import type { RateLimitConfig, RateLimitResult } from "./rate-limit";
-import { handleRateLimitCheck } from "./rate-limit";
 
 /**
  * Analytics data structure
@@ -191,13 +189,6 @@ export class BadgeDO extends DurableObject {
     const path = url.pathname;
 
     try {
-      // Handle rate limit check
-      if (path === "/ratelimit" && request.method === "POST") {
-        const config = await request.json<RateLimitConfig>();
-        const result = await handleRateLimitCheck(this.ctx.storage, config);
-        return Response.json(result);
-      }
-
       if (path === "/count" && request.method === "GET") {
         const result = await this.getCount();
         return Response.json(result);

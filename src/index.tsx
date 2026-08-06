@@ -11,18 +11,12 @@ import {
 } from "hono-openapi";
 import type { FC } from "hono/jsx";
 import z from "zod";
-import { type BadgeOptions, createBadge } from "./badge";
+import { handleBadgeRequest } from "./badge-request";
 import { BadgeDO } from "./do";
-import { shouldRecordHit } from "./hit-policy";
-import {
-  page_id_exists,
-  page_id_fetch,
-  page_id_fetch_add_one,
-  page_id_get_analytics,
-} from "./page";
+import { page_id_exists, page_id_get_analytics } from "./page";
 import InfoPage from "./pages/info";
 import LandingPage from "./pages/landing";
-import { RATE_LIMITS, checkRateLimit } from "./rate-limit";
+import { clientKey, withinLimit } from "./rate-limit";
 
 export { BadgeDO };
 
@@ -82,6 +76,14 @@ app.get(
   }),
   async (c) => {
     const { id } = c.req.param();
+
+    // Renders the same summary the analytics API does, so it is metered the
+    // same way. Without this it was the cheapest route to the most expensive
+    // Durable Object call in the service.
+    if (!(await withinLimit(c.env.RL_ANALYTICS, clientKey(c.req.raw)))) {
+      c.header("Retry-After", "60");
+      return c.text("Rate limit exceeded", 429);
+    }
 
     const analytics = c.env.BADGE_STORE;
     const summary = await page_id_get_analytics(analytics, id);
@@ -201,26 +203,12 @@ app.get(
 
     const analytics = c.env.BADGE_STORE;
 
-    // Check rate limit
-    const rateLimitResult = await checkRateLimit(
-      analytics,
-      pageId,
-      RATE_LIMITS.analytics,
-    );
-
-    // Add rate limit headers
-    c.header("X-RateLimit-Limit", rateLimitResult.limit.toString());
-    c.header("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
-    c.header(
-      "X-RateLimit-Reset",
-      new Date(rateLimitResult.resetAt).toISOString(),
-    );
-
-    if (!rateLimitResult.allowed) {
-      return c.json(
-        { error: "Rate limit exceeded", retryAfter: rateLimitResult.resetAt },
-        429,
-      );
+    // Metered per client rather than per badge, and before anything touches
+    // storage. The binding reports only whether the request is allowed, so
+    // there is no remaining/reset to report back.
+    if (!(await withinLimit(c.env.RL_ANALYTICS, clientKey(c.req.raw)))) {
+      c.header("Retry-After", "60");
+      return c.json({ error: "Rate limit exceeded" }, 429);
     }
 
     // Check if badge exists first
@@ -246,12 +234,14 @@ app.get(
 app.get(
   "/badge",
   describeRoute({
-    description: "Health",
+    description:
+      "Render a visitor badge, counting the view unless `hit` opts out.",
     responses: {
       200: {
-        description: "Successful response",
+        description:
+          "The badge. Cached for 15 seconds when `hit` opts out of counting, never cached otherwise.",
         content: {
-          "text/plain": { schema: resolver(z.string()) },
+          "image/svg+xml": { schema: resolver(z.string()) },
         },
       },
       400: {
@@ -263,11 +253,10 @@ app.get(
         },
       },
       429: {
-        description: "Too Many Requests",
+        description:
+          "The client is over its overall badge budget. Being over the budget for *counting* a view is not an error - the badge renders normally and the view is not counted.",
         content: {
-          "application/json": {
-            schema: resolver(z.object({ error: z.string() })),
-          },
+          "image/svg+xml": { schema: resolver(z.string()) },
         },
       },
       500: {
@@ -283,7 +272,10 @@ app.get(
   validator(
     "query",
     z.object({
-      page_id: z.string().min(1),
+      // A page ID becomes a Durable Object name, so it is length-capped rather
+      // than left unbounded. 256 is far above any real badge and well below
+      // what an abusive caller would otherwise be free to store.
+      page_id: z.string().min(1).max(256),
       color: z.string().optional(),
       lcolor: z.string().optional(),
       style: z.string().optional(),
@@ -291,15 +283,8 @@ app.get(
       label: z.string().optional(),
       logo: z.string().optional(),
       logoColor: z.string().optional(),
-      hit: z
-        .union([z.string(), z.boolean()])
-        .optional()
-        .transform((val) => {
-          if (val === undefined) return undefined;
-          if (typeof val === "boolean") return val;
-          return val.toLowerCase() === "true" || val.toLowerCase() === "yes";
-        }),
-      unique: z.boolean().optional(),
+      lColor: z.string().optional(),
+      hit: z.string().optional(),
       custom: z.string().optional(),
     }),
   ),
@@ -309,92 +294,13 @@ app.get(
       return c.json({ error: "page_id is required" }, 400);
     }
 
-    // Check rate limit for badge generation
-    const analytics = c.env.BADGE_STORE;
-    const rateLimitResult = await checkRateLimit(
-      analytics,
-      pageId,
-      RATE_LIMITS.badge,
-    );
-
-    // Add rate limit headers
-    c.header("X-RateLimit-Limit", rateLimitResult.limit.toString());
-    c.header("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
-    c.header(
-      "X-RateLimit-Reset",
-      new Date(rateLimitResult.resetAt).toISOString(),
-    );
-
-    if (!rateLimitResult.allowed) {
-      // Return a simple error badge instead of JSON for better UX
-      const errorBadge = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="20">
-      <rect width="150" height="20" fill="#e05d44"/>
-      <text x="75" y="14" font-family="Verdana" font-size="11" fill="#fff" text-anchor="middle">Rate Limit Exceeded</text>
-    </svg>`;
-      c.header("Content-Type", "image/svg+xml");
-      c.header(
-        "Retry-After",
-        Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000).toString(),
-      );
-      return c.body(errorBadge, 429);
-    }
-
-    const colour = c.req.query("color") ?? "blue";
-    const labelColour = c.req.query("lcolor") ?? "grey";
-    const style = c.req.query("style") ?? "flat";
-    // `label` appeared in the original public options table. Keep `text` as
-    // the authoritative parameter, but accept `label` when `text` is absent so
-    // existing URLs based on those docs do not need to be reconfigured.
-    const label = c.req.query("text") ?? c.req.query("label") ?? "Visitors";
-    const logo = c.req.query("logo") ?? "";
-    const logoColour =
-      c.req.query("logoColor") ?? c.req.query("lColor") ?? "white";
-
-    const hit_qry = c.req.query("hit");
-    const hit =
-      hit_qry == null || hit_qry.toLowerCase() === "true" || hit_qry === "yes";
-
-    // set time ten minutes ago, formated time.RFC1123
-    const date = new Date(Date.now() - 10 * 60 * 1000).toUTCString();
-    let expiry = date;
-    const unique = !!c.req.query("unique");
-    if (unique) {
-      expiry = new Date(Date.now() + 10 * 60 * 1000).toUTCString();
-    } else {
-      c.header("Cache-Control", "no-cache,max-age=0");
-    }
-    c.header("Content-Type", "image/svg+xml");
-    c.header("Date", date);
-    c.header("Expires", expiry);
-
-    // get count using Durable Object analytics
-    let text = await (shouldRecordHit(pageId, c.req.raw, hit)
-      ? page_id_fetch_add_one(analytics, pageId, c.req.raw)
-      : page_id_fetch(analytics, pageId));
-
-    // check for custom formatting
-    const custom_template = c.req.query("custom");
-    if (custom_template) {
-      text = custom_template.replace("CNT", text);
-    }
-
-    // get badge
-    const badgeOptions: BadgeOptions = {
-      label,
-      text,
-      colour,
-      labelColour,
-      style,
-      logo,
-      logoColour,
-    };
-
-    try {
-      return c.body(createBadge(badgeOptions), 200);
-    } catch (err) {
-      console.error("Failed to create badge", err);
-      return c.json({ error: "Failed to create badge" }, 500);
-    }
+    return await handleBadgeRequest(c.req.raw, {
+      cache: caches.default,
+      badgeStore: c.env.BADGE_STORE,
+      hitLimiter: c.env.RL_BADGE_HIT,
+      clientLimiter: c.env.RL_BADGE_CLIENT,
+      waitUntil: (work) => c.executionCtx.waitUntil(work),
+    });
   },
 );
 
