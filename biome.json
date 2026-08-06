@@ -7,7 +7,12 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["dist/", "node_modules/", "worker-configuration.d.ts"]
+    "ignore": [
+      "dist/",
+      "node_modules/",
+      "src/generated/",
+      "worker-configuration.d.ts"
+    ]
   },
   "formatter": {
     "enabled": true,

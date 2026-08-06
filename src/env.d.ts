@@ -1,3 +1,9 @@
+// `css-color-converter` ships no types. Only the one entry point the badge
+// renderer needs is declared.
+declare module "css-color-converter" {
+  export function fromString(color: string): { toHexString(): string } | null;
+}
+
 // Secrets are not declared in wrangler.toml, so `wrangler types` does not
 // generate them. Merged into the generated Env interface.
 interface Env {

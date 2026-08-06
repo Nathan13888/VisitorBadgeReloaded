@@ -1,5 +1,7 @@
 # Changelog
 
+08/05/26: Badges are now rendered inside the Worker instead of being proxied from shields.io. Rendering uses `badge-maker`, the library Shields itself renders with, and the full Simple Icons set is bundled alongside it, so serving a badge no longer makes any request outside Cloudflare. Output is byte-identical to what shields.io returned for the same options. Logo names resolve the way Shields resolves them - canonical slug (`googlechrome`), icon title with spaces as dashes (`google-chrome`), and Shields' legacy aliases - plus Simple Icons' own aliases, which Shields ignores. Two things that previously rendered a "404: badge not found" image now render properly: an empty `&text=`, and a `&color=`/`&text=` containing a single dash.
+
 08/05/26: Removed raw IP retention from badge analytics. Visitor addresses were previously kept in Durable Object storage as part of the unique visitor set; that data is now deleted the first time each badge is loaded and is never written again. The "Unique Visitors" metric is replaced by an estimated daily unique visitor count (~6.5% margin of error), computed from a HyperLogLog sketch. Addresses are hashed with a per-badge, per-day key derived from a Worker secret and recomputed on every request, so no key and nothing address-derived is ever persisted. Only the current day's registers are retained; earlier days are frozen to plain integers. Self-hosters must set `VISITOR_HASH_KEY` — see the README.
 
 10/25/25: Implemented rate limiting.

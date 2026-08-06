@@ -12,6 +12,11 @@ routes = [
     { pattern = "vbr.nathanchung.dev", zone_name = "nathanchung.dev", custom_domain = true },
 ]
 
+# Regenerates the bundled Simple Icons set before dev/deploy; a no-op when it
+# is already current with the installed `simple-icons`.
+[build]
+command = "bun run gen:icons"
+
 [limits]
 cpu_ms = 30
 

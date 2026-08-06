@@ -288,6 +288,7 @@ app.get(
       lcolor: z.string().optional(),
       style: z.string().optional(),
       text: z.string().optional(),
+      label: z.string().optional(),
       logo: z.string().optional(),
       logoColor: z.string().optional(),
       hit: z
@@ -341,9 +342,13 @@ app.get(
     const colour = c.req.query("color") ?? "blue";
     const labelColour = c.req.query("lcolor") ?? "grey";
     const style = c.req.query("style") ?? "flat";
-    const label = c.req.query("text") ?? "Visitors";
+    // `label` appeared in the original public options table. Keep `text` as
+    // the authoritative parameter, but accept `label` when `text` is absent so
+    // existing URLs based on those docs do not need to be reconfigured.
+    const label = c.req.query("text") ?? c.req.query("label") ?? "Visitors";
     const logo = c.req.query("logo") ?? "";
-    const logoColour = c.req.query("logoColor") ?? "white";
+    const logoColour =
+      c.req.query("logoColor") ?? c.req.query("lColor") ?? "white";
 
     const hit_qry = c.req.query("hit");
     const hit =
@@ -384,12 +389,12 @@ app.get(
       logoColour,
     };
 
-    const badge = await createBadge(badgeOptions);
-    if (!badge) {
+    try {
+      return c.body(createBadge(badgeOptions), 200);
+    } catch (err) {
+      console.error("Failed to create badge", err);
       return c.json({ error: "Failed to create badge" }, 500);
     }
-
-    return c.body(badge, 200);
   },
 );
 

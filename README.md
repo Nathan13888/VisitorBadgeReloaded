@@ -73,22 +73,25 @@ To use the options, **append** these flags to the URL of the badge!
 
 | Option                 | Flag                     | Description                                                                                                                                                                                                                                                                                                                          |
 | ---------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Colour**             | `&color=<hex>`           | Changes the colour of the embedded logo on the **right-side** of the badge.                                                                                                                                                                                                                                                          |
-| **Label Colour**       | `&lcolor=<hex>`          | Changes the colour of the embedded logo on the **left-side** of the badge.                                                                                                                                                                                                                                                           |
-| **Style**              | `&style=<style>`         | Sets the badge style based on **Sheild.io's** option.                                                                                                                                                                                                                                                                                |
-| **Text**               | `&text=<format>`         | Allows a **custom string format** to be set. Replaces `CNT` with the view count.                                                                                                                                                                                                                                                     |
-| **Label**              | `&label=<label>`         | Replaces the label with a custom one.                                                                                                                                                                                                                                                                                                |
-| **Logo**               | `&logo=<logo name>`      | Adds a logo to the badge (refer to examples). Find the logo name from [**Simple Icons**](https://simpleicons.org/)                                                                                                                                                                                                                   |
-| **Logo Colour**        | `&lcolor=<hex>`          | Changes the colour of the embedded logo on the **left-side** of the badge.                                                                                                                                                                                                                                                           |
+| **Colour**             | `&color=<colour>`        | Background colour of the count, on the **right-side** of the badge. Takes a hex value without the `#`, one of Shields' names (`blue`, `brightgreen`, `critical`, ...), or any CSS colour.                                                                                                                                              |
+| **Label Colour**       | `&lcolor=<colour>`       | Background colour of the label, on the **left-side** of the badge. Same formats as `&color=`.                                                                                                                                                                                                                                        |
+| **Style**              | `&style=<style>`         | One of `flat`, `flat-square`, `plastic`, `for-the-badge` or `social`. Anything else falls back to `flat`.                                                                                                                                                                                                                            |
+| **Text**               | `&text=<label>`          | Replaces the label on the **left-side** of the badge. A single underscore renders as a space (`Total_Visits`), `__` as a literal underscore, and `--` as a literal dash.                                                                                                                                                              |
+| **Label** (legacy)     | `&label=<label>`         | Legacy alias for `&text=`. If both are present, `&text=` takes precedence.                                                                                                                                                                                                                                                          |
+| **Custom**             | `&custom=<format>`       | Allows a **custom string format** to be set for the count. Replaces `CNT` with the view count, so `&custom=CNT_visits` renders "42 visits".                                                                                                                                                                                          |
+| **Logo**               | `&logo=<logo name>`      | Adds a logo to the badge (refer to examples). Takes any [**Simple Icons**](https://simpleicons.org/) slug (`googlechrome`), the icon title with spaces as dashes (`google-chrome`), or a `data:` URI of your own image.                                                                                                               |
+| **Logo Colour**        | `&logoColor=<colour>`    | Recolours the logo. Same formats as `&color=`. Defaults to white; pass an empty value to keep the icon's own brand colour.                                                                                                                                                                                                           |
 | **cache** (deprecated) | `&cache=<anything here>` | **Disabled** by default. Changes the caching behaviour of the count by setting a time out. This works _very_ poorly with Github's Camo CDN if enabled (since Camo doesn't respect the expiry headers unless it's expired). If the flag `&cache=` is followed by any text (anything more than one character), caching is **enabled**. |
 | **hit**                | `&hit=off`               | **Enabled** by default. Determines if the badge will update the count (useful for duplicated badges or badges for just viewing the count). If left _empty_, it will update the count on each view. Any setting that is **non-empty (isn't `true` or `yes`**) is considered **disabled**.                                             |
 
 **Defaults**:
 
 - Colour: "blue"
-- Style: "square"
+- Label Colour: "grey"
+- Style: "flat"
 - Text: "Visitors"
 - Logo: _no logo_
+- Logo Colour: "white"
 - Cache: _disabled_
 - Hit: _enabled_
 
@@ -141,12 +144,12 @@ ie. 'visitor-badge.glitch.me/badge?page_id=YOURPAGEID' --> 'https://vbr.nathanch
 
 ### Options (Old Option) (add as a [HTTP query parameter](https://en.wikipedia.org/wiki/Query_string))
 
-**IMPORTANT: Other than the `page_id` option, there exists additional styling options and functional options (in the future). More details about the options could be found at the bottom of the [Shields.io website](https://shields.io/). Also, all the options are specified as HTTP parameters!!!**
+**IMPORTANT: Other than the `page_id` option, there exists additional styling options and functional options (in the future). Badges are rendered with the same library Shields.io uses, so the styling options carry over from [Shields.io](https://shields.io/). Also, all the options are specified as HTTP parameters!!!**
 
 - `page_id=<your id>` --> identifies your badge, make this unique to yourself. eg. `<your username.visitor.badge.reloaded` or `<username>-<username>`
 - `color=<colour here>` --> the hex colour of the text background, **do NOT include the `#`**
 - `lcolor=<colour here>` --> the hex colour of the label background, **do NOT include the `#`**
-- `style=<style name>` --> refer to the Sheilds.IO website for the available options
+- `style=<style name>` --> one of `flat`, `flat-square`, `plastic`, `for-the-badge` or `social`
 - `text=<Some text other than "Visitors">` --> put a customizable label on your badge
 - `logo` --> logo to put beside the badge, go to <https://simpleicons.org/> for the available names
 - `logoColor` --> refer to `color` for the formatting
@@ -179,6 +182,8 @@ bun i
 wrangler secret put VISITOR_HASH_KEY
 
 # 4. deploy to cloudflare
+# the Simple Icons set is generated into src/generated/ as part of the build,
+# so this needs devDependencies installed (`bun i` above covers it)
 bun run deploy
 ```
 
@@ -187,4 +192,4 @@ bun run deploy
 - Cloudflare Workers
 - Typescript
 - Hono
-- shields.io
+- [badge-maker](https://www.npmjs.com/package/badge-maker) (the renderer behind shields.io) and [Simple Icons](https://simpleicons.org/), both bundled into the Worker
