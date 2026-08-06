@@ -228,14 +228,6 @@ export class BadgeDO extends DurableObject {
         return Response.json({ exists: this.analytics !== null });
       }
 
-      if (path === "/full" && request.method === "GET") {
-        const result = await this.getFullData();
-        if (!result) {
-          return Response.json({ error: "No analytics data" }, { status: 404 });
-        }
-        return Response.json(result);
-      }
-
       return Response.json({ error: "Not found" }, { status: 404 });
     } catch (error) {
       console.error("Error in BadgeDO:", error);
@@ -604,14 +596,6 @@ export class BadgeDO extends DurableObject {
       dailyStats,
       hourlyStats,
     };
-  }
-
-  /**
-   * Get full analytics data (for debugging/admin)
-   */
-  async getFullData(): Promise<BadgeAnalytics | null> {
-    await this.initialize();
-    return this.analytics;
   }
 
   /**
