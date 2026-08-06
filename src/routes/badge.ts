@@ -35,7 +35,7 @@ badge.get(
       },
       429: {
         description:
-          "The client is over its overall badge budget. Being over the budget for *counting* a view is not an error - the badge renders normally and the view is not counted.",
+          "A direct client is over its overall badge budget. Being over the budget for *counting* a view is not an error - the badge renders normally and the view is not counted - and requests arriving through GitHub Camo are degraded the same way rather than refused, because Camo's addresses are shared by every badge on GitHub.",
         content: {
           "image/svg+xml": { schema: resolver(z.string()) },
         },

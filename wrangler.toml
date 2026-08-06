@@ -54,9 +54,14 @@ simple = { limit = 30, period = 60 }
 
 # The actual abuse brake: bounds total badge work per address, and so bounds
 # Durable Object creation by a client rotating through invented page IDs. Only
-# consulted when the edge cache missed. Deliberately generous because all
-# GitHub Camo traffic shares a small set of addresses; if this ever turns real
-# traffic away it is logged as `rate_limit_client_exceeded`.
+# consulted when the edge cache missed.
+#
+# Exceeding it refuses a direct client outright but only degrades GitHub Camo
+# to reads, because Camo's addresses are shared by every badge on GitHub and a
+# refusal there would return an error image for unrelated badges. Recording a
+# hit is the only thing that persists a record, so a degraded client still
+# cannot create storage. Both outcomes are logged as
+# `rate_limit_client_exceeded`, distinguished by `degraded`.
 [[ratelimits]]
 name = "RL_BADGE_CLIENT"
 namespace_id = "1002"

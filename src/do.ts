@@ -120,59 +120,87 @@ export class BadgeDO extends DurableObject {
    * and is written straight back, so every subsequent load takes the fast path.
    * That is what keeps compatibility handling out of the read path: past this
    * point the record is known to match the schema and no field needs defending.
+   *
+   * Leaves `initialized` false when the v1 lookup could not be completed. That
+   * is the one outcome the object must not treat as settled - see `recordHit`.
    */
   async initialize(pageIdHint?: string) {
     if (this.initialized) return;
 
-    const stored = await this.ctx.storage.get<unknown>("analytics");
+    // Serialized, because the badge path reaches a cold object with two calls
+    // at once: the count read and the hit dispatched alongside it. The input
+    // gate does not hold them apart - it closes for storage operations, and the
+    // v1 lookup is a KV read - so without this both would run the migration and
+    // each would install its own record, leaving whichever finished last to
+    // discard the other's work. Reached at most once per object lifetime.
+    await this.ctx.blockConcurrencyWhile(async () => {
+      if (this.initialized) return;
 
-    if (stored !== undefined) {
-      const current = StoredAnalyticsSchema.safeParse(stored);
+      const stored = await this.ctx.storage.get<unknown>("analytics");
 
-      if (current.success) {
-        this.analytics = current.data;
-      } else {
-        const { record, repaired } = upgradeStoredAnalytics(
-          stored,
-          this.ctx.id.name || pageIdHint || "",
-        );
+      if (stored !== undefined) {
+        const current = StoredAnalyticsSchema.safeParse(stored);
 
-        if (repaired) {
-          // Not reachable from an orderly older record, so this means the
-          // stored value was actually damaged. The count is preserved when it
-          // was salvageable and the breakdowns around it reset.
-          console.error("analytics_record_repaired", {
-            pageId: record.pageId,
-            totalHits: record.totalHits,
-          });
-        }
-
-        this.analytics = record;
-        await this.persist();
-      }
-    } else {
-      // No DO storage found - check KV for the badge's v1 count.
-      const pageId = this.ctx.id.name || pageIdHint;
-
-      if (pageId) {
-        const migrated = await migrateFromKV(
-          this.kvNamespace,
-          pageId,
-          Date.now(),
-        );
-        if (migrated) {
-          this.analytics = migrated;
-          await this.persist();
-          console.log(
-            `Successfully migrated badge ${pageId} with ${migrated.totalHits} hits`,
+        if (current.success) {
+          this.analytics = current.data;
+        } else {
+          const { record, repaired } = upgradeStoredAnalytics(
+            stored,
+            this.ctx.id.name || pageIdHint || "",
           );
+
+          if (repaired) {
+            // Not reachable from an orderly older record, so this means the
+            // stored value was actually damaged. The count is preserved when it
+            // was salvageable and the breakdowns around it reset.
+            console.error("analytics_record_repaired", {
+              pageId: record.pageId,
+              totalHits: record.totalHits,
+            });
+          }
+
+          this.analytics = record;
+          await this.persist();
         }
       } else {
-        console.log("No pageId found for migration");
-      }
-    }
+        // No DO storage found - check KV for the badge's v1 count.
+        const pageId = this.ctx.id.name || pageIdHint;
 
-    this.initialized = true;
+        if (pageId) {
+          const migration = await migrateFromKV(
+            this.kvNamespace,
+            pageId,
+            Date.now(),
+          );
+
+          if (migration.status === "failed") {
+            // Deliberately left uninitialized. A failure here says only that
+            // KV could not be asked, not that the badge has no v1 count, and
+            // the two must not be confused: this object gets storage of its
+            // own the moment it records anything, and from then on the
+            // migration never runs again. Returning early is what keeps the
+            // retry available to the next call.
+            console.error("kv_migration_failed", {
+              pageId,
+              error: migration.error,
+            });
+            return;
+          }
+
+          if (migration.status === "migrated") {
+            this.analytics = migration.record;
+            await this.persist();
+            console.log(
+              `Successfully migrated badge ${pageId} with ${migration.record.totalHits} hits`,
+            );
+          }
+        } else {
+          console.log("No pageId found for migration");
+        }
+      }
+
+      this.initialized = true;
+    });
   }
 
   /**
@@ -180,6 +208,19 @@ export class BadgeDO extends DurableObject {
    */
   async recordHit(request: HitRequest): Promise<{ count: number }> {
     await this.initialize(request.pageId);
+
+    // Only false when the v1 lookup failed, and the one path where that has to
+    // be fatal. Every other caller here reads, and a read that answers zero for
+    // a moment costs nothing; this one would write, and writing is what retires
+    // the migration - a fresh record persisted now would shadow the badge's
+    // legacy count permanently on the strength of a momentary KV outage.
+    // Failing costs a single hit: the worker records hits in the background and
+    // already swallows this, and the next hit retries the migration.
+    if (!this.initialized) {
+      throw new Error(
+        `Refusing to record a hit for ${request.pageId}: v1 migration incomplete`,
+      );
+    }
 
     const now = Date.now();
 

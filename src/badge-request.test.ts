@@ -434,11 +434,11 @@ describe("rate limiting", () => {
     expect(h.store.reads).toBe(1);
   });
 
-  test("an exhausted client budget turns the request away before any storage", async () => {
+  test("an exhausted client budget turns a direct request away before any storage", async () => {
     const h = harness({ clientLimiter: deny });
 
     const response = await handleBadgeRequest(
-      badgeRequest("page_id=alpha"),
+      badgeRequest("page_id=alpha", { "User-Agent": "curl/8.7.1" }),
       h.deps,
     );
 
@@ -446,6 +446,69 @@ describe("rate limiting", () => {
     expect(response.headers.get("Retry-After")).toBe("60");
     expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(h.store.calls).toHaveLength(0);
+  });
+
+  test("the refusal cannot be cached past the minute it applies to", async () => {
+    const h = harness({ clientLimiter: deny });
+    const now = Date.parse("2026-08-05T12:00:00Z");
+
+    const response = await handleBadgeRequest(
+      badgeRequest("page_id=alpha", { "User-Agent": "curl/8.7.1" }),
+      h.deps,
+      now,
+    );
+
+    expect(Date.parse(response.headers.get("Expires") ?? "")).toBe(
+      now - 10 * 60 * 1000,
+    );
+    expect(response.headers.get("Date")).toBe(response.headers.get("Expires"));
+  });
+
+  test("an exhausted client budget degrades Camo to a read instead of refusing", async () => {
+    const h = harness({ clientLimiter: deny });
+
+    const response = await handleBadgeRequest(
+      badgeRequest("page_id=alpha", { "User-Agent": "github-camo (abcdef)" }),
+      h.deps,
+    );
+    await settle(h);
+
+    // Camo's addresses are shared by every badge on GitHub, so one busy egress
+    // must never be able to put an error image in an unrelated README.
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain("41");
+
+    // Degraded to reads: the hit is what would have persisted a record, and so
+    // the one thing a rotating-page-ID client must not still get.
+    expect(h.store.writes).toBe(0);
+    expect(h.store.reads).toBe(1);
+  });
+
+  test("a degraded proxy is held to reads even for a badge it may normally count", async () => {
+    const h = harness({ clientLimiter: deny });
+
+    await handleBadgeRequest(
+      badgeRequest(`page_id=${protectedPageId}`, {
+        "User-Agent": "github-camo (abcdef)",
+      }),
+      h.deps,
+    );
+    await settle(h);
+
+    expect(h.store.writes).toBe(0);
+  });
+
+  test("a client within its budget is unaffected by the proxy exemption", async () => {
+    const h = harness();
+
+    const response = await handleBadgeRequest(
+      badgeRequest("page_id=alpha", { "User-Agent": "curl/8.7.1" }),
+      h.deps,
+    );
+    await settle(h);
+
+    expect(response.status).toBe(200);
+    expect(h.store.writes).toBe(1);
   });
 
   test("a cache hit does not spend the client budget", async () => {

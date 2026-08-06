@@ -1,6 +1,6 @@
 import { type BadgeOptions, createBadge } from "./badge";
 import { page_id_fetch, page_id_fetch_add_one } from "./do-client";
-import { shouldRecordHit } from "./hit-policy";
+import { isGitHubCamo, shouldRecordHit } from "./hit-policy";
 import { type Limiter, clientKey, hitKey, withinLimit } from "./rate-limit";
 
 /**
@@ -103,8 +103,17 @@ function uncacheableHeaders(now: number): Record<string, string> {
   };
 }
 
-/** Served when a client has exhausted its overall badge budget. */
-function rateLimitedBadge(): Response {
+/**
+ * Served when a direct client has exhausted its overall badge budget.
+ *
+ * Carries the same backdated `Date` and `Expires` as every other uncacheable
+ * response. Without them an intermediary that ignores `no-store` - Camo has
+ * historically been generous about what it holds on to - could keep this error
+ * long after the minute it applies to, turning a momentary limit into a badge
+ * that stays broken. Proxied traffic never reaches this; see
+ * `handleBadgeRequest`.
+ */
+function rateLimitedBadge(now: number): Response {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="20">
       <rect width="150" height="20" fill="#e05d44"/>
       <text x="75" y="14" font-family="Verdana" font-size="11" fill="#fff" text-anchor="middle">Rate Limit Exceeded</text>
@@ -113,7 +122,7 @@ function rateLimitedBadge(): Response {
   return new Response(svg, {
     status: 429,
     headers: {
-      "Content-Type": "image/svg+xml",
+      ...uncacheableHeaders(now),
       "Cache-Control": "no-store",
       "Retry-After": "60",
       "X-VBR-Cache": "BYPASS",
@@ -219,6 +228,10 @@ function countSnapshot(count: string): Response {
  * counts hits whose User-Agent is GitHub Camo, so a response withheld for that
  * reason must not be stored under a URL that Camo will later ask for, or the
  * cache would answer Camo and silently suppress a real hit.
+ *
+ * Every way of running out of budget degrades to a read; only a direct client
+ * over the overall budget is refused outright. Nothing that arrives through a
+ * shared proxy can be turned into a broken image for somebody else's badge.
  */
 export async function handleBadgeRequest(
   request: Request,
@@ -242,16 +255,45 @@ export async function handleBadgeRequest(
 
   // Only consulted once the cache has missed, so a well-behaved badge never
   // spends its client budget.
-  if (!(await withinLimit(deps.clientLimiter, clientKey(request)))) {
+  const overClientBudget = !(await withinLimit(
+    deps.clientLimiter,
+    clientKey(request),
+  ));
+
+  if (overClientBudget) {
+    const proxied = isGitHubCamo(request);
+
     console.warn("rate_limit_client_exceeded", {
       pageId,
       country: request.headers.get("CF-IPCountry"),
       userAgent: request.headers.get("User-Agent"),
+      // Which of the two outcomes below this request got, so the log answers
+      // whether the limit is turning real readers away or merely holding
+      // proxied traffic to reads.
+      degraded: proxied,
     });
-    return rateLimitedBadge();
+
+    // A proxy is degraded rather than refused. This budget is keyed on the
+    // address alone, and GitHub Camo puts every badge on GitHub behind a
+    // handful of addresses, so one busy egress reaching the limit would
+    // otherwise return a red error image for unrelated badges - the single
+    // most visible failure this service can produce, and the one the hit
+    // budget below already goes out of its way to avoid.
+    //
+    // Dropping the hit is what keeps this from reopening the abuse the limit
+    // exists for. Recording a hit is the only thing that persists a record, so
+    // a client held to reads cannot create storage for an invented page ID no
+    // matter how many it rotates through. What it costs is unbounded reads
+    // from anything willing to claim Camo's User-Agent, which store nothing
+    // and are absorbed by the count snapshot for any page ID asked for twice.
+    if (!proxied) {
+      return rateLimitedBadge(now);
+    }
   }
 
-  let recordHit = shouldRecordHit(pageId, request, hitRequested);
+  let recordHit = overClientBudget
+    ? false
+    : shouldRecordHit(pageId, request, hitRequested);
   if (
     recordHit &&
     !(await withinLimit(deps.hitLimiter, hitKey(request, pageId)))

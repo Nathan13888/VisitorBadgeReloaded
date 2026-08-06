@@ -152,6 +152,86 @@ describe("freezeStaleSketch", () => {
 
     expect(freezeStaleSketch(analytics, NOW)).toBe(false);
   });
+
+  test("leaves a sketch dated ahead of the clock alone", async () => {
+    const analytics = record();
+    await applyHit(analytics, hit(), NOW + DAY_MS, DAILY_KEY);
+
+    // Reachable when a hit is suspended across midnight and resumes behind a
+    // newer one. Freezing here would publish an estimate for a day still in
+    // progress.
+    expect(freezeStaleSketch(analytics, NOW)).toBe(false);
+    expect(analytics.todaySketch?.date).toBe("2026-01-16");
+    expect(analytics.dailyUniqueVisitors).toEqual({});
+  });
+});
+
+/**
+ * `now` is captured by the Durable Object before `applyHit`'s awaits, and the
+ * input gate does not hold two hits apart across them, so a hit timestamped
+ * just before UTC midnight can be folded in after one from the following day.
+ */
+describe("hits that arrive out of order across midnight", () => {
+  const LAST_NIGHT = Date.UTC(2026, 0, 14, 23, 59, 59, 900);
+  const YESTERDAY = "2026-01-14";
+
+  /** A record mid-way through the 14th, with three visitors in its sketch. */
+  async function eveningOfThe14th(): Promise<StoredAnalytics> {
+    const analytics = record();
+    for (const ip of ["203.0.113.7", "198.51.100.4", "192.0.2.9"]) {
+      await applyHit(analytics, hit({ ip }), LAST_NIGHT, DAILY_KEY);
+    }
+    expect(estimateToday(analytics)).toBe(3);
+    return analytics;
+  }
+
+  test("the finished day keeps the estimate it was frozen with", async () => {
+    const analytics = await eveningOfThe14th();
+
+    // The first hit of the 15th rolls the day over.
+    await applyHit(analytics, hit({ ip: "203.0.113.100" }), NOW, DAILY_KEY);
+    expect(analytics.dailyUniqueVisitors[YESTERDAY]).toBe(3);
+
+    // The straggler from the 14th resumes only now. It must not reopen the day
+    // it belongs to, because that day's estimate has already been published.
+    await applyHit(
+      analytics,
+      hit({ ip: "203.0.113.200" }),
+      LAST_NIGHT,
+      DAILY_KEY,
+    );
+    await applyHit(analytics, hit({ ip: "203.0.113.101" }), NOW, DAILY_KEY);
+
+    expect(analytics.dailyUniqueVisitors[YESTERDAY]).toBe(3);
+    expect(analytics.todaySketch?.date).toBe(TODAY);
+    expect(estimateToday(analytics)).toBe(2);
+  });
+
+  test("the straggler is still counted everywhere order does not matter", async () => {
+    const analytics = await eveningOfThe14th();
+
+    await applyHit(analytics, hit(), NOW, DAILY_KEY);
+    await applyHit(analytics, hit(), LAST_NIGHT, DAILY_KEY);
+
+    // Only the visitor estimate gives the address up; the hit itself lands in
+    // its own day's buckets as it always would.
+    expect(analytics.totalHits).toBe(5);
+    expect(analytics.dailyHits[YESTERDAY]).toBe(4);
+    expect(analytics.dailyHits[TODAY]).toBe(1);
+    expect(analytics.hourlyHits["2026-01-14-23"]).toBe(4);
+  });
+
+  test("lastUpdated does not move backwards", async () => {
+    const analytics = await eveningOfThe14th();
+
+    await applyHit(analytics, hit(), NOW, DAILY_KEY);
+    await applyHit(analytics, hit(), LAST_NIGHT, DAILY_KEY);
+
+    // Rewinding this would make a live badge look abandoned to the retention
+    // alarm, which stops rescheduling once the record falls out of the window.
+    expect(analytics.lastUpdated).toBe(NOW);
+    expect(withinRetention(analytics, NOW)).toBe(true);
+  });
 });
 
 describe("pruneExpired", () => {

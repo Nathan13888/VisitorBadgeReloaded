@@ -81,6 +81,15 @@ function topBy<K extends string>(
  * Freeze a finished day's sketch into `dailyUniqueVisitors` and discard it, so
  * only the current day's registers are ever retained.
  *
+ * Only a day strictly older than `now`'s is finished. The comparison used to be
+ * `!==`, which also fired when the sketch was *newer* than `now` - reachable
+ * because `now` is captured before the caller's awaits, so a hit suspended
+ * across UTC midnight can arrive after one from the following day has already
+ * rolled the sketch over. That published a partial estimate for a day still in
+ * progress and left a sketch dated yesterday behind, which the next hit then
+ * froze over yesterday's correct figure. Date buckets sort lexically, so
+ * ordering them is a plain string compare.
+ *
  * Returns whether anything changed, so the caller knows to persist.
  */
 export function freezeStaleSketch(
@@ -88,13 +97,33 @@ export function freezeStaleSketch(
   now: number,
 ): boolean {
   const current = analytics.todaySketch;
-  if (!current || current.date === getDateBucket(now)) {
+  if (!current || current.date >= getDateBucket(now)) {
     return false;
   }
 
   analytics.dailyUniqueVisitors[current.date] = estimateSketch(current);
   analytics.todaySketch = undefined;
   return true;
+}
+
+/**
+ * Whether a hit's day is the newest the record has seen, and so whether its
+ * address belongs in the live sketch.
+ *
+ * False only for a hit that arrives after the day it belongs to has been closed
+ * - either because a sketch for a later day is already open, or because its own
+ * day has already been frozen. Folding one in either way would reopen a day
+ * that is finished, and the estimate for it has already been published.
+ */
+function belongsToCurrentDay(
+  analytics: StoredAnalytics,
+  dateBucket: string,
+): boolean {
+  const current = analytics.todaySketch;
+  if (current) {
+    return current.date === dateBucket;
+  }
+  return analytics.dailyUniqueVisitors[dateBucket] === undefined;
 }
 
 /**
@@ -151,14 +180,23 @@ export async function applyHit(
   const dateBucket = getDateBucket(now);
 
   analytics.totalHits += 1;
-  analytics.lastUpdated = now;
+  // Never moves backward. `now` is captured by the caller before the awaits
+  // below, so a hit can arrive here after a later one has already been folded
+  // in; letting it rewind `lastUpdated` would make a live badge look abandoned
+  // to the retention alarm. Every counter around it is `+= 1` and so does not
+  // care about order at all.
+  analytics.lastUpdated = Math.max(analytics.lastUpdated, now);
 
   analytics.hourlyHits[hourBucket] =
     (analytics.hourlyHits[hourBucket] || 0) + 1;
   analytics.dailyHits[dateBucket] = (analytics.dailyHits[dateBucket] || 0) + 1;
 
   freezeStaleSketch(analytics, now);
-  if (dailyKey) {
+  // The sketch is the one thing here that is not order-independent: it is
+  // rolled over and published once a day, and a hit that arrives after its own
+  // day closed has nowhere to go. Its counters above still apply - only the
+  // visitor estimate, which is already approximate, gives up that one address.
+  if (dailyKey && belongsToCurrentDay(analytics, dateBucket)) {
     if (!analytics.todaySketch) {
       analytics.todaySketch = createSketch(dateBucket);
     }
