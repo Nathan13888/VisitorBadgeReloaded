@@ -439,8 +439,19 @@ export class BadgeDO extends DurableObject {
       this.cleanupOldData();
     }
 
-    // Persist to storage
-    await this.persist();
+    // Persisted without awaiting, deliberately.
+    //
+    // Awaiting a storage write disables the runtime's write coalescing, so the
+    // `await` that used to be here forced one full-object write per hit and
+    // made a popular badge queue them one behind another. Unawaited, every hit
+    // that arrives while a flush is in flight is combined into a single atomic
+    // write, and a burst costs what one hit used to.
+    //
+    // This does not weaken durability: the output gate still holds this
+    // response until the write is confirmed, so no caller can observe a count
+    // that was not stored. It is the caller that no longer waits - see
+    // `recordHitInBackground` in `badge-request.ts`.
+    this.persist();
 
     return { count: this.analytics.totalHits };
   }

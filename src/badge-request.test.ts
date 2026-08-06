@@ -56,6 +56,12 @@ class FakeCache {
 class FakeBadgeStore {
   calls: string[] = [];
   count = 41;
+  /** Hits that ran to completion, as opposed to merely being dispatched. */
+  recorded = 0;
+  /** When set, `/hit` waits on this before answering: a write still in flight. */
+  hitGate: Promise<void> | null = null;
+  /** When true, `/hit` fails the way an unreachable Durable Object would. */
+  failHits = false;
 
   idFromName(name: string) {
     return { name };
@@ -67,7 +73,14 @@ class FakeBadgeStore {
         const path = new URL(url).pathname;
         this.calls.push(path);
         if (path === "/hit") {
+          if (this.hitGate) {
+            await this.hitGate;
+          }
+          if (this.failHits) {
+            return Response.json({ error: "unavailable" }, { status: 500 });
+          }
           this.count += 1;
+          this.recorded += 1;
         }
         return Response.json({ count: this.count });
       },
@@ -285,8 +298,10 @@ describe("hit recording", () => {
   test("a recorded hit refreshes the snapshot its siblings read", async () => {
     const h = harness();
 
+    // The snapshot is cold, so this request's own count lookup is the one read.
     await handleBadgeRequest(badgeRequest("page_id=alpha"), h.deps);
     await settle(h);
+    expect(h.store.reads).toBe(1);
 
     const sibling = await handleBadgeRequest(
       badgeRequest("page_id=alpha&style=plastic&hit=false"),
@@ -294,9 +309,68 @@ describe("hit recording", () => {
     );
     await settle(h);
 
-    // The sibling reused the freshly written snapshot rather than re-reading.
-    expect(h.store.reads).toBe(0);
+    // The sibling reused the snapshot the background hit wrote rather than
+    // re-reading, and so sees the incremented count.
+    expect(h.store.reads).toBe(1);
     expect(await sibling.text()).toContain("42");
+  });
+
+  test("only the hit refreshes the snapshot, so the count cannot go backwards", async () => {
+    const h = harness();
+
+    await handleBadgeRequest(badgeRequest("page_id=alpha"), h.deps);
+    await settle(h);
+
+    // The count lookup on a recording request read 41 but must not have written
+    // it: doing so could land after the hit's own 42 and pin the badge to the
+    // lower number until the entry expired.
+    expect(h.cache.puts).toBe(1);
+    const sibling = await handleBadgeRequest(
+      badgeRequest("page_id=alpha&hit=false"),
+      h.deps,
+    );
+    expect(await sibling.text()).toContain("42");
+  });
+
+  test("the response does not wait for the hit to be recorded", async () => {
+    const h = harness();
+    let release: () => void = () => {};
+    h.store.hitGate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    const response = await handleBadgeRequest(
+      badgeRequest("page_id=alpha"),
+      h.deps,
+    );
+
+    // The badge is rendered and returned while the write is still in flight.
+    expect(response.status).toBe(200);
+    expect(await response.clone().text()).toContain("41");
+    expect(h.store.writes).toBe(1);
+    expect(h.store.recorded).toBe(0);
+
+    release();
+    await settle(h);
+    expect(h.store.recorded).toBe(1);
+  });
+
+  test("a Durable Object failure costs the hit, not the badge", async () => {
+    const h = harness();
+    h.store.failHits = true;
+
+    const response = await handleBadgeRequest(
+      badgeRequest("page_id=alpha"),
+      h.deps,
+    );
+
+    // Settling must not reject: the failure is swallowed in the background,
+    // where there is no longer anybody to report it to.
+    await settle(h);
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain("41");
+    expect(h.store.recorded).toBe(0);
   });
 
   test("a request that never asked to opt out is not cached", async () => {
@@ -311,6 +385,7 @@ describe("hit recording", () => {
       badgeRequest("page_id=alpha&hit=true"),
       h.deps,
     );
+    await settle(h);
 
     expect(first.headers.get("X-VBR-Cache")).toBe("BYPASS");
     expect(second.headers.get("X-VBR-Cache")).toBe("BYPASS");
@@ -420,6 +495,7 @@ describe("rate limiting", () => {
       badgeRequest("page_id=alpha"),
       h.deps,
     );
+    await settle(h);
 
     expect(response.status).toBe(200);
     expect(h.store.writes).toBe(1);

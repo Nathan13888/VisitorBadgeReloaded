@@ -132,14 +132,20 @@ function stamp(response: Response, status: string): Response {
  * Read a badge's count, sharing one Durable Object read across every styling of
  * that badge for the length of the TTL.
  *
- * Safe on every non-recording path, including the ones that are not themselves
- * cacheable: a count is only a number, and serving a slightly stale one can
- * never suppress a hit, because no hit is being recorded on these paths.
+ * Safe on every path: a count is only a number, and serving a slightly stale
+ * one can never suppress a hit, because recording a hit no longer depends on
+ * what was read here.
+ *
+ * `refreshSnapshot` is false on the recording path, where the hit's own answer
+ * writes a fresher snapshot moments later. Writing one here as well would race
+ * it, and losing that race would pin the badge to a lower number for a whole
+ * TTL - a visitor watching it would see the count go backwards.
  */
 async function readCount(
   deps: BadgeDeps,
   requestUrl: string,
   pageId: string,
+  refreshSnapshot: boolean,
 ): Promise<string> {
   const key = countCacheKey(requestUrl, pageId);
 
@@ -150,8 +156,40 @@ async function readCount(
   }
 
   const count = await page_id_fetch(deps.badgeStore, pageId);
-  deps.waitUntil(deps.cache.put(key, countSnapshot(count)));
+  if (refreshSnapshot) {
+    deps.waitUntil(deps.cache.put(key, countSnapshot(count)));
+  }
   return count;
+}
+
+/**
+ * Record a hit after the badge has already been sent.
+ *
+ * A badge's Durable Object lives wherever that badge was first seen, so this
+ * call can cross a continent before it even reaches storage. Nothing in the
+ * rendered badge depends on its result - the count comes from the shared
+ * snapshot - so awaiting it only ever added that round trip to every reader's
+ * latency. Its answer is used for one thing: refreshing the snapshot that the
+ * next TTL's worth of readers will render.
+ *
+ * Failures are logged and swallowed. This runs after the response has been
+ * returned, so throwing could not be reported to anyone anyway, and the cost of
+ * a failure is one uncounted hit rather than a broken image in a README.
+ */
+async function recordHitInBackground(
+  deps: BadgeDeps,
+  request: Request,
+  pageId: string,
+): Promise<void> {
+  try {
+    const count = await page_id_fetch_add_one(deps.badgeStore, pageId, request);
+    await deps.cache.put(
+      countCacheKey(request.url, pageId),
+      countSnapshot(count),
+    );
+  } catch (error) {
+    console.error("Failed to record hit", { pageId, error });
+  }
 }
 
 function countSnapshot(count: string): Response {
@@ -166,6 +204,15 @@ function countSnapshot(count: string): Response {
 /**
  * Render a badge, counting the view unless the caller opted out, the page's hit
  * policy rejects it, or the client is over its hit budget.
+ *
+ * Recording a hit does not block the response. The number a badge renders comes
+ * from the shared count snapshot on every path, so a view is counted in the
+ * background and the reader waits only for a cache lookup and a render. What
+ * this gives up is read-after-write: a badge shows the count as of the last
+ * snapshot refresh rather than one that includes the view being served. That is
+ * the right trade for a visitor counter, where the number is decorative and the
+ * latency is not - and where the Durable Object being written to may be on
+ * another continent.
  *
  * Only a request that explicitly asked not to be counted is cached. That is
  * narrower than "no hit was recorded" on purpose: the project's own badge only
@@ -215,17 +262,13 @@ export async function handleBadgeRequest(
     recordHit = false;
   }
 
-  let text: string;
+  // Dispatched before the read so the two run concurrently, and so that on a
+  // cold snapshot the count lookup is the only thing left on the critical path.
   if (recordHit) {
-    text = await page_id_fetch_add_one(deps.badgeStore, pageId, request);
-    // Keep the shared snapshot in step with the count we just wrote, so a
-    // styled sibling badge does not immediately render a lower number.
-    deps.waitUntil(
-      deps.cache.put(countCacheKey(request.url, pageId), countSnapshot(text)),
-    );
-  } else {
-    text = await readCount(deps, request.url, pageId);
+    deps.waitUntil(recordHitInBackground(deps, request, pageId));
   }
+
+  let text = await readCount(deps, request.url, pageId, !recordHit);
 
   const custom = url.searchParams.get("custom");
   if (custom) {
