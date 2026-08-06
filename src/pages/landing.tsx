@@ -313,7 +313,7 @@ export default function LandingPage() {
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                   <p class="text-sm text-blue-800 dark:text-blue-200">
                     📊 View hourly/daily trends, top referrers, geographic data,
-                    and unique visitors for the last 14 days
+                    and estimated daily unique visitors for the last 14 days
                   </p>
                 </div>
               </div>

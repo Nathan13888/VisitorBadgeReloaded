@@ -4,6 +4,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types",
+    "test": "bun test",
     "bench": "bun run benchmark/benchmark.ts",
     "bench:cache": "bun run benchmark/cache-benchmark.ts",
     "bench:usage": "bun run benchmark/usage-simulation.ts",

@@ -1,4 +1,11 @@
 import { DurableObject } from "cloudflare:workers";
+import {
+  type HllSketch,
+  addToSketch,
+  createSketch,
+  deriveDailyKey,
+  estimateSketch,
+} from "./hll";
 import type { RateLimitConfig, RateLimitResult } from "./rate-limit";
 import { handleRateLimitCheck } from "./rate-limit";
 
@@ -13,8 +20,10 @@ export interface BadgeAnalytics {
   hourlyHits: Record<string, number>;
   // Daily aggregates
   dailyHits: Record<string, number>;
-  // Unique visitors (IP hashes within current day)
-  uniqueVisitors: Set<string>;
+  // Frozen estimated unique visitor counts for past days only
+  dailyUniqueVisitors: Record<string, number>;
+  // In-progress sketch for the current UTC day (see ./hll)
+  todaySketch?: HllSketch;
   // Referrer tracking
   referrers: Record<string, number>;
   // Geographic data (country codes)
@@ -30,7 +39,9 @@ export interface BadgeAnalytics {
  */
 export interface AnalyticsSummary {
   totalHits: number;
-  uniqueVisitors: number;
+  // Estimated distinct visitors so far today (HyperLogLog, ~6.5% error).
+  // null when the metric is unavailable, e.g. VISITOR_HASH_KEY is unset
+  uniqueVisitorsToday: number | null;
   hitsLast24Hours: number;
   hitsLast7Days: number;
   hitsLast14Days: number;
@@ -38,7 +49,13 @@ export interface AnalyticsSummary {
   topCountries: Array<{ country: string; count: number }>;
   topUserAgents: Array<{ agent: string; count: number }>;
   topPlatforms: Array<{ platform: string; count: number }>;
-  dailyStats: Array<{ date: string; hits: number }>;
+  // uniqueVisitors is null for days that predate unique visitor measurement,
+  // which is not the same as a day on which nobody visited
+  dailyStats: Array<{
+    date: string;
+    hits: number;
+    uniqueVisitors: number | null;
+  }>;
   hourlyStats: Array<{ hour: string; hits: number }>;
 }
 
@@ -142,10 +159,28 @@ export class BadgeDO extends DurableObject {
   private analytics: BadgeAnalytics | null = null;
   private initialized = false;
   private kvNamespace: KVNamespace;
+  private hashSecret: string | undefined;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.kvNamespace = env.vbr_badge_counts;
+    this.hashSecret = env.VISITOR_HASH_KEY;
+  }
+
+  /**
+   * Derive today's hashing key, or undefined when the secret is not configured.
+   *
+   * Recomputed per hit rather than stored, so a storage dump cannot be probed
+   * for whether a guessed address visited.
+   */
+  private async dailyKey(
+    pageId: string,
+    date: string,
+  ): Promise<Uint8Array | undefined> {
+    if (!this.hashSecret) {
+      return undefined;
+    }
+    return await deriveDailyKey(this.hashSecret, pageId, date);
   }
 
   /**
@@ -198,12 +233,7 @@ export class BadgeDO extends DurableObject {
         if (!result) {
           return Response.json({ error: "No analytics data" }, { status: 404 });
         }
-        // Convert Set to Array for JSON serialization
-        const serializable = {
-          ...result,
-          uniqueVisitors: Array.from(result.uniqueVisitors),
-        };
-        return Response.json(serializable);
+        return Response.json(result);
       }
 
       return Response.json({ error: "Not found" }, { status: 404 });
@@ -221,12 +251,21 @@ export class BadgeDO extends DurableObject {
 
     const stored = await this.ctx.storage.get<BadgeAnalytics>("analytics");
     if (stored) {
-      this.analytics = stored;
-      // Convert uniqueVisitors array back to Set
-      if (Array.isArray(this.analytics.uniqueVisitors)) {
-        this.analytics.uniqueVisitors = new Set(
-          this.analytics.uniqueVisitors as unknown as string[],
-        );
+      // Versions before 08/05/26 persisted a set of raw client addresses under
+      // `uniqueVisitors`. Strip it the first time such a badge is loaded and
+      // write the record back immediately, so the addresses stop existing.
+      const { uniqueVisitors, ...purged } = stored as BadgeAnalytics & {
+        uniqueVisitors?: unknown;
+      };
+      const hadLegacyVisitors = uniqueVisitors !== undefined;
+
+      this.analytics = purged;
+      if (!this.analytics.dailyUniqueVisitors) {
+        this.analytics.dailyUniqueVisitors = {};
+      }
+
+      if (hadLegacyVisitors) {
+        await this.persist();
       }
     } else {
       // No DO storage found - check KV for migration
@@ -261,7 +300,7 @@ export class BadgeDO extends DurableObject {
         const count = Number.parseInt(kvCount, 10);
         if (!Number.isNaN(count) && count > 0) {
           const now = Date.now();
-          const dateBucket = this.getDateBucket(now);
+          const dateBucket = getDateBucket(now);
 
           console.log(`Migrating badge ${pageId} from KV: ${count} hits`);
 
@@ -274,7 +313,7 @@ export class BadgeDO extends DurableObject {
             dailyHits: {
               [dateBucket]: count, // Attribute all historical hits to today
             },
-            uniqueVisitors: new Set(),
+            dailyUniqueVisitors: {},
             referrers: {},
             countries: {},
             userAgents: {},
@@ -296,14 +335,20 @@ export class BadgeDO extends DurableObject {
   }
 
   /**
-   * Helper to get date bucket (needed for migration)
+   * Freeze a finished day's sketch into `dailyUniqueVisitors` and discard it,
+   * so only the current day's registers are ever retained.
+   *
+   * Returns whether anything changed, so the caller knows to persist.
    */
-  private getDateBucket(timestamp: number): string {
-    const date = new Date(timestamp);
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+  private freezeStaleSketch(analytics: BadgeAnalytics, now: number): boolean {
+    const current = analytics.todaySketch;
+    if (!current || current.date === getDateBucket(now)) {
+      return false;
+    }
+
+    analytics.dailyUniqueVisitors[current.date] = estimateSketch(current);
+    analytics.todaySketch = undefined;
+    return true;
   }
 
   /**
@@ -335,11 +380,17 @@ export class BadgeDO extends DurableObject {
     }
     this.analytics.dailyHits = dailyHits;
 
-    // Limit unique visitors set size
-    if (this.analytics.uniqueVisitors.size > 10000) {
-      const visitors = Array.from(this.analytics.uniqueVisitors);
-      this.analytics.uniqueVisitors = new Set(visitors.slice(-5000));
+    // Clean frozen daily unique visitor estimates
+    const dailyUniqueVisitors: Record<string, number> = {};
+    for (const [key, value] of Object.entries(
+      this.analytics.dailyUniqueVisitors,
+    )) {
+      const timestamp = parseDateBucket(key);
+      if (now - timestamp < fourteenDaysMs) {
+        dailyUniqueVisitors[key] = value;
+      }
     }
+    this.analytics.dailyUniqueVisitors = dailyUniqueVisitors;
   }
 
   /**
@@ -366,7 +417,7 @@ export class BadgeDO extends DurableObject {
         lastUpdated: now,
         hourlyHits: {},
         dailyHits: {},
-        uniqueVisitors: new Set(),
+        dailyUniqueVisitors: {},
         referrers: {},
         countries: {},
         userAgents: {},
@@ -390,9 +441,18 @@ export class BadgeDO extends DurableObject {
     this.analytics.dailyHits[dateBucket] =
       (this.analytics.dailyHits[dateBucket] || 0) + 1;
 
-    // Track unique visitor (hash IP + date for privacy)
-    const visitorKey = `${request.ip}:${dateBucket}`;
-    this.analytics.uniqueVisitors.add(visitorKey);
+    // Fold the address into today's sketch. It is hashed in memory with a key
+    // derived from a Worker secret, and neither the address nor that key is
+    // ever stored. Without the secret the metric is skipped rather than
+    // silently downgraded to something weaker.
+    this.freezeStaleSketch(this.analytics, now);
+    const key = await this.dailyKey(request.pageId, dateBucket);
+    if (key) {
+      if (!this.analytics.todaySketch) {
+        this.analytics.todaySketch = createSketch(dateBucket);
+      }
+      await addToSketch(this.analytics.todaySketch, request.ip, key);
+    }
 
     // Track referrer
     const referrerHost =
@@ -445,10 +505,19 @@ export class BadgeDO extends DurableObject {
       return null;
     }
 
+    const now = Date.now();
+
+    // Freeze a stale day before it is pruned. Today's sketch is left untouched,
+    // and viewing a summary never starts one - only a hit does.
+    const froze = this.freezeStaleSketch(this.analytics, now);
+
     // Clean up old data before generating summary
     this.cleanupOldData();
 
-    const now = Date.now();
+    if (froze) {
+      await this.persist();
+    }
+
     const oneDayMs = 24 * 60 * 60 * 1000;
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
     const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
@@ -497,8 +566,19 @@ export class BadgeDO extends DurableObject {
       .slice(0, 10);
 
     // Get daily stats (sorted by date)
+    const today = getDateBucket(now);
+    const todaySketch = this.analytics.todaySketch;
+    const uniqueVisitorsToday = todaySketch
+      ? estimateSketch(todaySketch)
+      : null;
+    const frozenUniques = this.analytics.dailyUniqueVisitors;
     const dailyStats = Object.entries(this.analytics.dailyHits)
-      .map(([date, hits]) => ({ date, hits }))
+      .map(([date, hits]) => ({
+        date,
+        hits,
+        uniqueVisitors:
+          date === today ? uniqueVisitorsToday : (frozenUniques[date] ?? null),
+      }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
     // Get recent hourly stats (last 48 hours)
@@ -513,7 +593,7 @@ export class BadgeDO extends DurableObject {
 
     return {
       totalHits: this.analytics.totalHits,
-      uniqueVisitors: this.analytics.uniqueVisitors.size,
+      uniqueVisitorsToday,
       hitsLast24Hours,
       hitsLast7Days,
       hitsLast14Days,
@@ -540,13 +620,7 @@ export class BadgeDO extends DurableObject {
   private async persist() {
     if (!this.analytics) return;
 
-    // Convert Set to Array for storage
-    const dataToStore = {
-      ...this.analytics,
-      uniqueVisitors: Array.from(this.analytics.uniqueVisitors),
-    };
-
-    await this.ctx.storage.put("analytics", dataToStore);
+    await this.ctx.storage.put("analytics", this.analytics);
   }
 
   /**

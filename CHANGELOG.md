@@ -1,6 +1,6 @@
 # Changelog
 
-08/05/26: Removed raw IP retention from badge analytics. Visitor addresses were previously kept in Durable Object storage as part of the unique visitor set; that data is now deleted the first time each badge is loaded and is never written again. The "Unique Visitors" metric is replaced by an estimated daily unique visitor count, computed from a HyperLogLog sketch keyed by a per-day secret that is discarded at midnight UTC (~6.5% margin of error).
+08/05/26: Removed raw IP retention from badge analytics. Visitor addresses were previously kept in Durable Object storage as part of the unique visitor set; that data is now deleted the first time each badge is loaded and is never written again. The "Unique Visitors" metric is replaced by an estimated daily unique visitor count (~6.5% margin of error), computed from a HyperLogLog sketch. Addresses are hashed with a per-badge, per-day key derived from a Worker secret and recomputed on every request, so no key and nothing address-derived is ever persisted. Only the current day's registers are retained; earlier days are frozen to plain integers. Self-hosters must set `VISITOR_HASH_KEY` — see the README.
 
 10/25/25: Implemented rate limiting.
 

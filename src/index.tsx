@@ -1,5 +1,16 @@
+import { Scalar } from "@scalar/hono-api-reference";
+import { createMarkdownFromOpenApi } from "@scalar/openapi-to-markdown";
 import { Hono } from "hono";
+import {
+  type GenerateSpecOptions,
+  describeRoute,
+  generateSpecs,
+  openAPIRouteHandler,
+  resolver,
+  validator,
+} from "hono-openapi";
 import type { FC } from "hono/jsx";
+import z from "zod";
 import { type BadgeOptions, createBadge } from "./badge";
 import { BadgeDO } from "./do";
 import { shouldRecordHit } from "./hit-policy";
@@ -12,17 +23,6 @@ import {
 import InfoPage from "./pages/info";
 import LandingPage from "./pages/landing";
 import { RATE_LIMITS, checkRateLimit } from "./rate-limit";
-import { Scalar } from "@scalar/hono-api-reference";
-import { createMarkdownFromOpenApi } from "@scalar/openapi-to-markdown";
-import {
-  describeRoute,
-  type GenerateSpecOptions,
-  generateSpecs,
-  openAPIRouteHandler,
-  resolver,
-  validator,
-} from "hono-openapi";
-import z from "zod";
 
 export { BadgeDO };
 
@@ -124,14 +124,42 @@ app.get(
           "application/json": {
             schema: resolver(
               z.object({
-                pageId: z.string(),
-                totalVisits: z.number(),
-                uniqueVisitors: z.number(),
-                dailyVisits: z.array(
+                totalHits: z.number(),
+                uniqueVisitorsToday: z
+                  .number()
+                  .nullable()
+                  .describe(
+                    "Estimated distinct visitors so far today (UTC), from a HyperLogLog sketch with ~6.5% margin of error. Not a person-level count. Null when the metric is unavailable.",
+                  ),
+                hitsLast24Hours: z.number(),
+                hitsLast7Days: z.number(),
+                hitsLast14Days: z.number(),
+                topReferrers: z.array(
+                  z.object({ referrer: z.string(), count: z.number() }),
+                ),
+                topCountries: z.array(
+                  z.object({ country: z.string(), count: z.number() }),
+                ),
+                topUserAgents: z.array(
+                  z.object({ agent: z.string(), count: z.number() }),
+                ),
+                topPlatforms: z.array(
+                  z.object({ platform: z.string(), count: z.number() }),
+                ),
+                dailyStats: z.array(
                   z.object({
                     date: z.string(),
-                    count: z.number(),
+                    hits: z.number(),
+                    uniqueVisitors: z
+                      .number()
+                      .nullable()
+                      .describe(
+                        "Estimated distinct visitors that day (~6.5% margin of error), or null for days predating this measurement.",
+                      ),
                   }),
+                ),
+                hourlyStats: z.array(
+                  z.object({ hour: z.string(), hits: z.number() }),
                 ),
               }),
             ),
@@ -364,7 +392,6 @@ app.get(
     return c.body(badge, 200);
   },
 );
-
 
 /**
  * OpenAPI Documentation and LLM Markdown Generation

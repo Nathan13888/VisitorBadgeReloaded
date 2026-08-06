@@ -170,7 +170,15 @@ bun i
 # update `wrangler.toml` with your own kv namespace id (avoid changing binding name to avoid regenerating types)
 # @see https://developers.cloudflare.com/kv/get-started/
 
-# 3. deploy to cloudflare
+# 3. set the visitor hashing secret (any long random string)
+# used to derive per-badge, per-day keys for the estimated unique visitor
+# metric. It is never persisted, so a storage dump cannot be probed for
+# whether a given address visited. Skip this and hit counting still works,
+# but the estimate is reported as null rather than falling back to something
+# weaker.
+wrangler secret put VISITOR_HASH_KEY
+
+# 4. deploy to cloudflare
 bun run deploy
 ```
 

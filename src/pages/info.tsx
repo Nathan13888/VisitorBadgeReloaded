@@ -74,10 +74,12 @@ export default function InfoPage(props: {
 
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
             <div class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
-              Unique Visitors
+              Estimated unique visitors today
             </div>
             <div class="text-3xl font-bold text-purple-600 dark:text-purple-400">
-              {stats.uniqueVisitors.toLocaleString()}
+              {stats.uniqueVisitorsToday === null
+                ? "—"
+                : stats.uniqueVisitorsToday.toLocaleString()}
             </div>
           </div>
 

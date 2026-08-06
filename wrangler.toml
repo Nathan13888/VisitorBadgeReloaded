@@ -23,6 +23,10 @@ head_sampling_rate = 1
 # [vars]
 # MY_VAR = "my-variable"
 
+# Secrets (set with `wrangler secret put`, never committed here):
+#   VISITOR_HASH_KEY - derives per-badge, per-day keys for the estimated unique
+#   visitor metric. Never persisted. If unset, the metric reports null.
+
 [[kv_namespaces]]
 binding = "vbr_badge_counts"
 id = "6a63980cfdb6493ca4bb8e8817060543"
