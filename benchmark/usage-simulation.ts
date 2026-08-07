@@ -167,7 +167,7 @@ async function runUsageSimulation(): Promise<void> {
   }
 
   // Summary
-  console.log("\n" + "=".repeat(80));
+  console.log(`\n${"=".repeat(80)}`);
   console.log("📈 USAGE SIMULATION SUMMARY");
   console.log("=".repeat(80));
 

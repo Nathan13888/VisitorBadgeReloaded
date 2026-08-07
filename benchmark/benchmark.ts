@@ -182,7 +182,7 @@ function printResults(result: BenchmarkResult): void {
   console.log(
     `   Throughput:          ${result.requestsPerSecond.toFixed(2)} req/s`,
   );
-  console.log(`\n   Response Times (ms):`);
+  console.log("\n   Response Times (ms):");
   console.log(`   Min:                 ${result.minResponseTime.toFixed(2)}ms`);
   console.log(`   Avg:                 ${result.avgResponseTime.toFixed(2)}ms`);
   console.log(`   P50 (median):        ${result.p50ResponseTime.toFixed(2)}ms`);
@@ -349,7 +349,7 @@ async function runBenchmarkSuite(): Promise<void> {
   printResults(results[results.length - 1]);
 
   // Summary
-  console.log("\n" + "=".repeat(80));
+  console.log(`\n${"=".repeat(80)}`);
   console.log("📈 BENCHMARK SUMMARY");
   console.log("=".repeat(80));
 

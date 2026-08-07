@@ -24,22 +24,20 @@ and API access while remaining compatible with the original service.
 
 **Results:**
 
-![alt text](benchmark/latency_chart.png)
-
 | Test Name | Requests | Success Rate | Avg Response | P95 | P99 | Throughput |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Health Check** | 100 | 100.00% | 73.21ms | 137.28ms | 1084.86ms | 70.41 req/s |
-| **Badge - Sequential Requests** | 50 | 100.00% | 53.13ms | 76.75ms | 253.03ms | 15.75 req/s |
-| **Badge - With Hit Counting** | 100 | 100.00% | 205.76ms | 233.94ms | 563.20ms | 20.99 req/s |
-| **Badge - Read-Only (No Hits)** | 100 | 100.00% | 59.65ms | 98.79ms | 208.14ms | 59.84 req/s |
-| **Badge - Low Concurrency** | 100 | 100.00% | 71.73ms | 264.17ms | 272.44ms | 87.99 req/s |
-| **Badge - High Concurrency** | 200 | 100.00% | 918.29ms | 5121.83ms | 11090.42ms | 17.04 req/s |
-| **Badge - Customized Styling** | 100 | 100.00% | 74.43ms | 258.76ms | 263.12ms | 97.39 req/s |
-| **Analytics API** | 50 | 100.00% | 79.96ms | 140.41ms | 272.62ms | 69.08 req/s |
-| **Landing Page** | 50 | 100.00% | 22.10ms | 32.69ms | 49.65ms | 231.59 req/s |
-| **Stress Test - Burst Traffic** | 500 | 100.00% | 1236.31ms | 5134.62ms | 19083.69ms | 9.89 req/s |
+| **Health Check** | 100 | 100.00% | 72.19ms | 539.55ms | 672.36ms | 27.97 req/s |
+| **Badge - Sequential Requests** | 50 | 100.00% | 44.30ms | 29.59ms | 1046.52ms | 18.36 req/s |
+| **Badge - With Hit Counting** | 100 | 100.00% | 101.00ms | 952.35ms | 1291.92ms | 32.41 req/s |
+| **Badge - Read-Only (No Hits)** | 100 | 100.00% | 63.88ms | 48.31ms | 853.43ms | 61.73 req/s |
+| **Badge - Low Concurrency** | 100 | 100.00% | 161.17ms | 1244.82ms | 1244.87ms | 30.96 req/s |
+| **Badge - High Concurrency** | 200 | 100.00% | 468.04ms | 1349.58ms | 4102.70ms | 31.26 req/s |
+| **Badge - Customized Styling** | 100 | 100.00% | 144.87ms | 1255.16ms | 1257.63ms | 63.15 req/s |
+| **Analytics API** | 50 | 100.00% | 69.31ms | 80.14ms | 116.98ms | 105.85 req/s |
+| **Landing Page** | 50 | 100.00% | 23.15ms | 39.84ms | 48.45ms | 236.99 req/s |
+| **Stress Test - Burst Traffic** | 500 | 100.00% | 594.97ms | 1753.77ms | 4902.85ms | 35.73 req/s |
 
-Performed on 2025-10-19 using a Macbook (M4 Pro) with a ~12.6ms average network latency to Cloudflare.
+Performed on 2026-08-06 using a MacBook Pro (M4 Pro) against the public Cloudflare-hosted service.
 
 **Quick Start:**
 

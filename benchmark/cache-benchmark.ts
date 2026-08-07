@@ -146,7 +146,7 @@ async function testCacheBehavior(): Promise<void> {
   }
 
   // Summary
-  console.log("\n" + "=".repeat(60));
+  console.log(`\n${"=".repeat(60)}`);
   console.log("📊 CACHE BEHAVIOR SUMMARY");
   console.log("=".repeat(60));
 

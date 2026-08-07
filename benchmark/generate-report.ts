@@ -490,7 +490,7 @@ async function generateReport(): Promise<void> {
   await Bun.write(filename, html);
 
   console.log(`\n✅ Report generated: ${filename}`);
-  console.log(`\n🌐 Open it in your browser to view the results!`);
+  console.log("\n🌐 Open it in your browser to view the results!");
 }
 
 generateReport().catch(console.error);

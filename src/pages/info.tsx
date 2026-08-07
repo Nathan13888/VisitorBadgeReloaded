@@ -113,8 +113,8 @@ export default function InfoPage(props: {
             </div>
             {/* Load Chart.js from CDN */}
             <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" />
-            {/* biome-ignore lint/security/noDangerouslySetInnerHtml: Chart.js initialization */}
             <script
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: Chart.js initialization
               dangerouslySetInnerHTML={{
                 __html: `
                 (function() {

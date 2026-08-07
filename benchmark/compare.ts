@@ -120,7 +120,7 @@ function compareRuns(files: BenchmarkFile[]): Comparison[] {
 }
 
 function generateReport(comparisons: Comparison[]): void {
-  console.log("\n" + "=".repeat(80));
+  console.log(`\n${"=".repeat(80)}`);
   console.log("📊 BENCHMARK COMPARISON REPORT");
   console.log("=".repeat(80));
 
@@ -130,7 +130,7 @@ function generateReport(comparisons: Comparison[]): void {
     `Latest: ${comparisons[0]?.runs[comparisons[0]?.runs.length - 1]?.timestamp || "N/A"}`,
   );
 
-  console.log("\n" + "-".repeat(80));
+  console.log(`\n${"-".repeat(80)}`);
   console.log("Performance Changes (older → newer)");
   console.log("-".repeat(80));
 
@@ -158,14 +158,14 @@ function generateReport(comparisons: Comparison[]): void {
     (a, b) => a.p95Change - b.p95Change,
   );
 
-  console.log("\n" + "-".repeat(80));
+  console.log(`\n${"-".repeat(80)}`);
   console.log("🎉 Biggest Improvements (P95 latency)");
   console.log("-".repeat(80));
   sortedByP95.slice(0, 3).forEach((c, i) => {
     console.log(`  ${i + 1}. ${c.testName}: ${c.p95Change.toFixed(2)}% faster`);
   });
 
-  console.log("\n" + "-".repeat(80));
+  console.log(`\n${"-".repeat(80)}`);
   console.log("⚠️  Biggest Regressions (P95 latency)");
   console.log("-".repeat(80));
   sortedByP95
@@ -182,7 +182,7 @@ function generateReport(comparisons: Comparison[]): void {
     (a, b) => b.throughputChange - a.throughputChange,
   );
 
-  console.log("\n" + "-".repeat(80));
+  console.log(`\n${"-".repeat(80)}`);
   console.log("🚀 Best Throughput Improvements");
   console.log("-".repeat(80));
   sortedByThroughput.slice(0, 3).forEach((c, i) => {

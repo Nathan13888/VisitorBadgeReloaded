@@ -69,8 +69,7 @@ function calculateStats(times: number[]): {
   const sorted = [...times].sort((a, b) => a - b);
   const avg = times.reduce((a, b) => a + b, 0) / times.length;
   const variance =
-    times.reduce((sum, time) => sum + Math.pow(time - avg, 2), 0) /
-    times.length;
+    times.reduce((sum, time) => sum + (time - avg) ** 2, 0) / times.length;
   const stdDev = Math.sqrt(variance);
 
   return {

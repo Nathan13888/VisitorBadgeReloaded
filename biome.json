@@ -8,6 +8,8 @@
   "files": {
     "ignoreUnknown": false,
     "ignore": [
+      ".wrangler/",
+      "benchmark/results/",
       "dist/",
       "node_modules/",
       "src/generated/",
